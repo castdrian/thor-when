@@ -9,7 +9,12 @@
     "url": "https://github.com/castdrian/thor-when.git"
   },
   "homepage": "https://castdrian.github.io/thor-when/",
-  "keywords": ["ayn", "thor", "shipping", "estimator"],
+  "keywords": [
+    "ayn",
+    "thor",
+    "shipping",
+    "estimator"
+  ],
   "type": "module",
   "packageManager": "bun@1.3.14",
   "scripts": {
