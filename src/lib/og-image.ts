@@ -22,6 +22,10 @@ export function buildOgImage(result: EstimateSuccess): string {
     formatWindow(result.dispatch.window.start, result.dispatch.window.end),
     42
   )
+  const dispatchWindowLabel =
+    result.dispatch.window.start === result.dispatch.window.end
+      ? 'published on this batch date'
+      : `likely between ${dispatchWindow}`
   const arrivalWindow = shorten(
     formatWindow(result.arrival.window.start, result.arrival.window.end),
     42
@@ -50,7 +54,7 @@ export function buildOgImage(result: EstimateSuccess): string {
   <line x1="90" y1="228" x2="1110" y2="228" stroke="#6686a6" stroke-opacity=".25"/>
   <text x="90" y="270" fill="#9cafc3" font-family="Roboto, sans-serif" font-size="15" letter-spacing="3">MOST LIKELY DISPATCH</text>
   <text x="90" y="330" fill="#f4f8ff" font-family="Roboto, sans-serif" font-size="56" font-weight="700">${escapeXml(dispatchDate)}</text>
-  <text x="90" y="365" fill="#a7b4c5" font-family="Roboto, sans-serif" font-size="18">likely between ${escapeXml(dispatchWindow)}</text>
+  <text x="90" y="365" fill="#a7b4c5" font-family="Roboto, sans-serif" font-size="18">${escapeXml(dispatchWindowLabel)}</text>
   <rect x="700" y="258" width="380" height="156" rx="23" fill="#16263a" stroke="#6686a6" stroke-opacity=".23"/>
   <text x="728" y="296" fill="#9cafc3" font-family="Roboto, sans-serif" font-size="14" letter-spacing="2.5">ESTIMATED ARRIVAL</text>
   <text x="728" y="340" fill="#f4f8ff" font-family="Roboto, sans-serif" font-size="24" font-weight="700">${escapeXml(arrivalWindow)}</text>

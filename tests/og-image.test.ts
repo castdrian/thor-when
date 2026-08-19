@@ -24,4 +24,22 @@ describe('dynamic og image', () => {
     expect(image).toContain('2500')
     expect(image).toContain('#03070d')
   })
+
+  it('uses an observed-date label for an exact shipment date', () => {
+    const result = estimateShipment(
+      {
+        color: 'White',
+        tier: 'max',
+        storageVariant: '512gb',
+        orderPrefix: '2234',
+        country: 'South Korea',
+        shippingMethod: 'standard'
+      },
+      dataset
+    )
+    if (!result.ok) throw new Error(result.message)
+    const image = buildOgImage(result)
+    expect(image).toContain('published on this batch date')
+    expect(image).not.toContain('likely between')
+  })
 })
