@@ -8,7 +8,7 @@ import {
 } from './types'
 import { SUPPORTED_COUNTRIES } from './transit'
 
-const VERSION = 1
+const VERSION = 2
 const STORAGE_ORDER: readonly StorageVariant[] = ['128gb', '256gb', '512gb', '1tb']
 const SHIPPING_ORDER: readonly ShippingMethod[] = ['dhl', 'standard']
 
