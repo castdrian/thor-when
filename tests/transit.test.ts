@@ -17,7 +17,7 @@ describe('transit estimates', () => {
     expect(transitRange('Brazil', 'standard')).toEqual({
       min: 15,
       max: 30,
-      label: 'Standard / 4PX'
+      label: '4PX'
     })
   })
 

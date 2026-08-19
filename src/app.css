@@ -455,14 +455,18 @@ small {
   margin: 42px 0 26px;
 }
 .date-hero strong {
+  display: block;
   font-size: clamp(2.8rem, 5vw, 4.6rem);
-  line-height: 0.95;
+  line-height: 1.08;
   letter-spacing: -0.09em;
   font-weight: 700;
 }
 .date-hero small {
+  display: block;
+  margin-top: 2px;
   font-family: var(--mono);
   font-size: 0.65rem;
+  line-height: 1.5;
 }
 .arrival-panel {
   display: flex;
@@ -740,13 +744,6 @@ small {
   padding: 8px 12px;
   color: var(--button-ink);
 }
-.site-footer p.footer-fineprint {
-  grid-column: 1 / -1;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.61rem;
-}
-
 :root[data-theme="dark"] .confidence-pill {
   color: #a7e5c0;
   border-color: rgba(116, 213, 157, 0.35);

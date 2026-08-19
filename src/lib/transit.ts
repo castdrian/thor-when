@@ -40,8 +40,8 @@ export function transitRange(
   if (!isSupportedCountry(country)) throw new Error('unsupported destination country')
   if (!isSupportedShippingMethod(method)) throw new Error('unsupported shipping method')
   if (method === 'dhl') return { min: 3, max: 7, label: 'DHL' }
-  if (country === BRAZIL) return { min: 15, max: 30, label: 'Standard / 4PX' }
-  return { min: 15, max: 20, label: 'Standard / 4PX' }
+  if (country === BRAZIL) return { min: 15, max: 30, label: '4PX' }
+  return { min: 15, max: 20, label: '4PX' }
 }
 
 export function addWorkingDays(isoDate: string, days: number): string {

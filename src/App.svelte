@@ -224,13 +224,6 @@
         : 'low confidence'
   }
 
-  function statusLabel(status: string): string {
-    if (status === 'observed') return 'published batch'
-    if (status === 'inferred') return 'frontier passed'
-    if (status === 'insufficient') return 'limited history'
-    return 'forecast'
-  }
-
   function resultTitle(status: string): string {
     if (status === 'observed') return 'your batch is on the move'
     if (status === 'inferred') return 'your bucket is probably past the frontier'
@@ -368,11 +361,10 @@
             maxlength="4"
             placeholder="2500"
             aria-label="First four digits of your order number"
-            aria-describedby={prefixHasError ? 'prefix-help prefix-error' : 'prefix-help'}
+            aria-describedby={prefixHasError ? 'prefix-error' : undefined}
             aria-invalid={prefixHasError}
           />
         </div>
-        <small id="prefix-help">four digits = one 100-order bucket.</small>
         {#if prefixHasError}
           <small class="field-error" id="prefix-error">enter exactly four digits.</small>
         {/if}
@@ -392,7 +384,7 @@
           <span>shipping method</span>
           <select bind:value={form.shippingMethod} aria-label="Shipping method">
             <option value="dhl">DHL</option>
-            <option value="standard">Standard / 4PX</option>
+            <option value="standard">4PX</option>
           </select>
         </label>
       </div>
@@ -417,7 +409,6 @@
         <section class="glass-card result-card" aria-live="polite" aria-labelledby="result-title">
           <div class="result-heading-row">
             <div>
-              <div class="card-kicker">result · {statusLabel(result.dispatch.status)}</div>
               <h2 id="result-title">{resultTitle(result.dispatch.status)}</h2>
             </div>
             <span
@@ -468,20 +459,6 @@
               on:click={() => navigator.clipboard?.writeText(window.location.href)}
               >copy share link <span aria-hidden="true">↗</span></button
             >
-            <a
-              class="quiet-button"
-              href={result.dataset.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              >verify at AYN <span aria-hidden="true">↗</span></a
-            >
-            <a
-              class="quiet-button"
-              href={result.arrival.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              >shipping time source <span aria-hidden="true">↗</span></a
-            >
           </div>
         </section>
       {:else if result && !result.ok}
@@ -501,7 +478,7 @@
           <div class="empty-meta">
             {#if datasetAvailable}
               <span>observed batches</span><strong>{liveDataset.records.length}</strong><span
-                >source through</span
+                >AYN data through</span
               ><strong>{formatDate(liveDataset.sourceLatestDate)}</strong>
             {:else}
               <span>source status</span><strong>unavailable</strong>
@@ -566,10 +543,9 @@
             maxlength="4"
             placeholder="2500"
             aria-label="Report order number first four digits"
-            aria-describedby={reportPrefixHasError ? 'report-prefix-help report-prefix-error' : 'report-prefix-help'}
+            aria-describedby={reportPrefixHasError ? 'report-prefix-error' : undefined}
             aria-invalid={reportPrefixHasError}
           />
-          <small id="report-prefix-help">four digits = one 100-order bucket.</small>
           {#if reportPrefixHasError}
             <small class="field-error" id="report-prefix-error">enter exactly four digits.</small>
           {/if}
@@ -587,7 +563,7 @@
             <span>shipping method</span>
             <select bind:value={reportForm.shippingMethod} aria-label="Report shipping method">
               <option value="dhl">DHL</option>
-              <option value="standard">Standard / 4PX</option>
+              <option value="standard">4PX</option>
             </select>
           </label>
         </div>
@@ -675,9 +651,5 @@
         >disclaimer <span aria-hidden="true">↗</span></a
       >
     </div>
-    <p class="footer-fineprint">
-      AYN refreshes every six hours · community reports update instantly · no tracking · built with
-      patience
-    </p>
   </footer>
 </main>

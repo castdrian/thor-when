@@ -6,7 +6,7 @@ thor when? turns AYN’s public shipment dashboard into an unofficial dispatch a
 
 Choose your Thor color, tier, storage, destination, and shipping method. Every current AYN variant is available in the guided form: Lite 8+128GB, Base 8+128GB, Pro 12+256GB, Max 16+512GB, and Max 16+1TB. Enter the first four digits of your order number. The app treats those digits as a 100-order bucket, then reports the latest configuration-specific shipment frontier, a likely dispatch date and window, and a separate arrival window.
 
-The form defaults to South Korea and Standard / 4PX, while still letting a visitor choose any supported route. The interface starts with the operating system’s light or dark preference. The theme button saves an explicit choice for future visits.
+The form defaults to South Korea and 4PX, while still letting a visitor choose any supported route. The interface starts with the operating system’s light or dark preference. The theme button saves an explicit choice for future visits.
 
 AYN’s [Thor product page](https://www.ayntec.com/products/ayn-thor) defines the current variants and AYN’s [shipping policy](https://www.ayntec.com/policies/shipping-policy) lists DHL at about 3–7 working days after dispatch, Standard / 4PX at about 15–20 calendar days, and Standard / 4PX to Brazil at about 15–30 calendar days. The app converts those sourced ranges into weekday-aware arrival bounds. Customs, holidays, remote-area delays, and carrier disruptions are outside the model.
 

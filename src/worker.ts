@@ -1,5 +1,9 @@
 import { parseCommunityReportInput } from './lib/report'
-import type { CommunityReport } from './lib/types'
+import { dataset } from './lib/data'
+import { estimateShipment } from './lib/forecast'
+import { readInputFromUrl } from './lib/url-state'
+import { buildShareMetadata } from './lib/share-meta'
+import type { CommunityReport, EstimateInput } from './lib/types'
 
 interface ReportRow {
   id: string
@@ -118,11 +122,83 @@ async function handleReports(request: Request, env: Env): Promise<Response> {
   return json({ error: 'method not allowed' }, 405, { allow: 'GET, POST, OPTIONS' })
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (character) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character] ??
+      character
+  )
+}
+
+function replaceMeta(html: string, selector: string, value: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(`(<meta\\s+${escapedSelector}\\s+content=")([^"]*)("\\s*/?>)`)
+  return html.replace(pattern, `$1${escapeHtml(value)}$3`)
+}
+
+function shareInput(url: URL): EstimateInput | null {
+  const values = readInputFromUrl(url.search)
+  if (
+    typeof values.color !== 'string' ||
+    !values.tier ||
+    !values.storageVariant ||
+    typeof values.orderPrefix !== 'string' ||
+    typeof values.country !== 'string' ||
+    !values.shippingMethod
+  )
+    return null
+  return {
+    color: values.color,
+    tier: values.tier,
+    storageVariant: values.storageVariant,
+    orderPrefix: values.orderPrefix,
+    country: values.country,
+    shippingMethod: values.shippingMethod
+  }
+}
+
+function shareResult(url: URL) {
+  const input = shareInput(url)
+  return input ? estimateShipment(input, dataset) : null
+}
+
+function addShareMetadata(html: string, url: URL): string {
+  const result = shareResult(url)
+  if (!result?.ok) return html
+  const metadata = buildShareMetadata(result)
+  const image = new URL('/og-card-dark.png', url).toString()
+  let output = html
+  output = replaceMeta(output, 'name="description"', metadata.description)
+  output = replaceMeta(output, 'property="og:title"', metadata.title)
+  output = replaceMeta(output, 'property="og:description"', metadata.description)
+  output = replaceMeta(output, 'property="og:url"', url.toString())
+  output = replaceMeta(output, 'property="og:image"', image)
+  output = replaceMeta(output, 'property="og:image:alt"', metadata.imageAlt)
+  output = replaceMeta(output, 'name="twitter:title"', metadata.title)
+  output = replaceMeta(output, 'name="twitter:description"', metadata.description)
+  output = replaceMeta(output, 'name="twitter:image"', image)
+  output = replaceMeta(output, 'name="twitter:image:alt"', metadata.imageAlt)
+  return output.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
+}
+
+async function handleDocument(request: Request, env: Env): Promise<Response> {
+  const response = await env.ASSETS.fetch(request)
+  const url = new URL(request.url)
+  if (!url.search || !response.headers.get('content-type')?.includes('text/html')) return response
+  const html = addShareMetadata(await response.text(), url)
+  const headers = new Headers(response.headers)
+  headers.set('cache-control', 'no-store')
+  headers.delete('content-length')
+  headers.delete('etag')
+  return new Response(html, { status: response.status, statusText: response.statusText, headers })
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
     if (url.pathname === '/api/reports') return handleReports(request, env)
     if (url.pathname === '/api/health') return json({ ok: true })
-    return env.ASSETS.fetch(request)
+    return handleDocument(request, env)
   }
 }
