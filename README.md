@@ -60,7 +60,7 @@ bun run build
 
 The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) through `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, and a six-hour schedule. The workflow uses Bun, fetches fresh AYN data, runs formatting, Biome, strict type checks, unit tests, Playwright, and a production build, then provisions the `thor-when` D1 database if needed, applies migrations, and deploys the Worker.
 
-Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository Actions secrets. The token needs permission to deploy Workers, manage D1, and attach the `thor-when.dylib.dev` custom domain. Cloudflare must have an active zone for `dylib.dev`; the custom-domain configuration creates the Worker DNS record and certificate.
+Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository Actions secrets. Use a long-lived Cloudflare API token with account read, D1 edit, Workers script edit, Workers route edit, and zone read permissions. The production Worker uses the existing proxied `thor-when.dylib.dev/*` route in the `dylib.dev` zone, so no GitHub Pages project or custom-domain provisioning is involved.
 
 The Worker’s static assets use `/` as their base path. The Vite configuration still supports a GitHub Pages project path when `VITE_BASE_PATH` is set, but the production workflow uses the Worker origin. The HTML includes lowercase `thor when?` Open Graph and Twitter metadata plus a dark 1200×630 PNG preview card for link embeds.
 
