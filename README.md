@@ -33,7 +33,7 @@ bun run build
 
 ## deployment
 
-The repository deploys to GitHub Pages through `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, and a six-hour schedule. The scheduled job fetches AYN’s dashboard, validates the source shape and freshness, builds the static app, and deploys the Pages artifact. A source failure leaves the previous deployment untouched.
+The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) through GitHub Pages and `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, and a six-hour schedule. The scheduled job fetches AYN’s dashboard, validates the source shape and freshness, builds the static app, and deploys the Pages artifact. A source failure leaves the previous deployment untouched.
 
 GitHub Pages must use GitHub Actions as its publishing source. Project Pages builds use `/thor-when/` as the asset base; a custom domain can use `/` by changing the Vite base configuration and setting `VITE_SITE_URL` to the public origin.
 
