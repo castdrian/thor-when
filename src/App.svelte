@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import InsightsPage from './Insights.svelte'
   import {
     dataset,
     displayConfiguration,
@@ -66,6 +67,8 @@
   let reportSubmitting = false
   let reportNotice = ''
   const baseUrl = import.meta.env.BASE_URL
+  const isInsightsPage =
+    typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '').endsWith('/insights')
   const today = new Date().toISOString().slice(0, 10)
 
   const colors = getColors(dataset)
@@ -243,6 +246,14 @@
   />
 </svelte:head>
 
+{#if isInsightsPage}
+  <InsightsPage
+    dataset={liveDataset}
+    homeHref={baseUrl}
+    {theme}
+    onToggleTheme={toggleTheme}
+  />
+{:else}
 <main class="page-shell">
   <div class="ambient-orb orb-b"></div>
   <div class="grain"></div>
@@ -637,6 +648,8 @@
         rel="noopener noreferrer"
         >disclaimer <span aria-hidden="true">↗</span></a
       >
+      <a href={`${baseUrl}insights`}>insights <span aria-hidden="true">↗</span></a>
     </div>
-  </footer>
+</footer>
 </main>
+{/if}
