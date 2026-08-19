@@ -121,7 +121,8 @@ export function addWorkingDaysToWindow(
   window: DateWindow,
   country: string,
   method: ShippingMethod,
-  reports: CommunityReport[] = []
+  reports: CommunityReport[] = [],
+  earliestDispatch = window.start
 ): ArrivalEstimate {
   const policyRange = transitRange(country, method)
   const evidence = communityTransitRange(policyRange, country, method, reports)
@@ -133,7 +134,7 @@ export function addWorkingDaysToWindow(
       : ''
   return {
     window: {
-      start: addDays(window.start, range.min),
+      start: addDays(window.start < earliestDispatch ? earliestDispatch : window.start, range.min),
       end: addDays(window.end, range.max)
     },
     transitDays: { min: range.min, max: range.max },

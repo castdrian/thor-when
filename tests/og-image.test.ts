@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { dataset } from '../src/lib/data'
 import { estimateShipment } from '../src/lib/forecast'
-import { buildShareMetadata } from '../src/lib/share-meta'
+import { buildOgImage } from '../src/lib/og-image'
 
-describe('share metadata', () => {
-  it('summarizes a shared estimate in social metadata', () => {
+describe('dynamic og image', () => {
+  it('renders the result card data into a dark svg image', () => {
     const result = estimateShipment(
       {
         color: 'Black',
@@ -17,9 +17,11 @@ describe('share metadata', () => {
       dataset
     )
     if (!result.ok) throw new Error(result.message)
-    const metadata = buildShareMetadata(result)
-    expect(metadata.title).toContain('thor when?')
-    expect(metadata.title).toContain('2500')
-    expect(metadata.description).toBe('see when your ayn thor will probably ship and arrive.')
+    const image = buildOgImage(result)
+    expect(image).toContain('<svg')
+    expect(image).toContain('MOST LIKELY DISPATCH')
+    expect(image).toContain('ESTIMATED ARRIVAL')
+    expect(image).toContain('2500')
+    expect(image).toContain('#03070d')
   })
 })

@@ -3,6 +3,7 @@ import { dataset } from './lib/data'
 import { estimateShipment } from './lib/forecast'
 import { readInputFromUrl } from './lib/url-state'
 import { buildShareMetadata } from './lib/share-meta'
+import { buildOgImage } from './lib/og-image'
 import type { CommunityReport, EstimateInput } from './lib/types'
 
 interface ReportRow {
@@ -167,19 +168,32 @@ function addShareMetadata(html: string, url: URL): string {
   const result = shareResult(url)
   if (!result?.ok) return html
   const metadata = buildShareMetadata(result)
-  const image = new URL('/og-card-dark.png', url).toString()
+  const image = new URL('/api/og', url)
+  image.search = url.search
   let output = html
   output = replaceMeta(output, 'name="description"', metadata.description)
   output = replaceMeta(output, 'property="og:title"', metadata.title)
   output = replaceMeta(output, 'property="og:description"', metadata.description)
   output = replaceMeta(output, 'property="og:url"', url.toString())
-  output = replaceMeta(output, 'property="og:image"', image)
+  output = replaceMeta(output, 'property="og:image"', image.toString())
+  output = replaceMeta(output, 'property="og:image:type"', 'image/svg+xml')
   output = replaceMeta(output, 'property="og:image:alt"', metadata.imageAlt)
   output = replaceMeta(output, 'name="twitter:title"', metadata.title)
   output = replaceMeta(output, 'name="twitter:description"', metadata.description)
-  output = replaceMeta(output, 'name="twitter:image"', image)
+  output = replaceMeta(output, 'name="twitter:image"', image.toString())
   output = replaceMeta(output, 'name="twitter:image:alt"', metadata.imageAlt)
   return output.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
+}
+
+function handleOgImage(url: URL): Response {
+  const result = shareResult(url)
+  if (!result?.ok) return new Response('not found', { status: 404 })
+  return new Response(buildOgImage(result), {
+    headers: {
+      'cache-control': 'public, max-age=300, s-maxage=3600',
+      'content-type': 'image/svg+xml; charset=utf-8'
+    }
+  })
 }
 
 async function handleDocument(request: Request, env: Env): Promise<Response> {
@@ -199,6 +213,7 @@ export default {
     const url = new URL(request.url)
     if (url.pathname === '/api/reports') return handleReports(request, env)
     if (url.pathname === '/api/health') return json({ ok: true })
+    if (url.pathname === '/api/og') return handleOgImage(url)
     return handleDocument(request, env)
   }
 }

@@ -60,6 +60,18 @@ describe('transit estimates', () => {
     })
   })
 
+  it('starts arrival after the highlighted dispatch date', () => {
+    expect(
+      addWorkingDaysToWindow(
+        { start: '2026-09-01', end: '2026-09-30' },
+        'United States',
+        'standard',
+        [],
+        '2026-09-20'
+      ).window.start
+    ).toBe('2026-10-05')
+  })
+
   it('blends validated community outcomes after three matching deliveries', () => {
     const reports = [10, 11, 12].map((id) => ({
       id: String(id),

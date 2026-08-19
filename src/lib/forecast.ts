@@ -386,7 +386,8 @@ export function estimateShipment(input: EstimateInput, source: ShipmentDataset):
     dispatch.window,
     input.country,
     input.shippingMethod,
-    source.communityReports ?? []
+    source.communityReports ?? [],
+    dispatch.likelyDate
   )
   return {
     ok: true,

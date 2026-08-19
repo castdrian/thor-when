@@ -65,7 +65,7 @@ describe('shipment estimates', () => {
       expect(['forecast', 'insufficient']).toContain(result.dispatch.status)
       expect(result.dispatch.likelyDate >= source.sourceLatestDate).toBe(true)
       expect(result.dispatch.window.end >= result.dispatch.window.start).toBe(true)
-      expect(result.arrival.window.start > result.dispatch.window.start).toBe(true)
+      expect(result.arrival.window.start >= result.dispatch.likelyDate).toBe(true)
     }
   })
 
