@@ -22,4 +22,5 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
         run: |
+          gh pr checks "$PR_NUMBER" --repo "$REPOSITORY" --watch --fail-fast
           gh pr merge "$PR_NUMBER" --repo "$REPOSITORY" --auto --squash
