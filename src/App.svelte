@@ -471,8 +471,7 @@
           <div class="empty-rings" aria-hidden="true"><span></span><span></span><span></span></div>
           <h2>your answer will live here</h2>
           <p>
-            fill the quiet little form and we’ll show the dispatch signal, the confidence, and the
-            route home.
+            enter your order details and we’ll show when it should ship and arrive.
           </p>
         </section>
       {/if}
