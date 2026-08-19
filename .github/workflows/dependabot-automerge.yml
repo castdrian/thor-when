@@ -22,8 +22,4 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          body="$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" --json body --jq '.body')"
-          if printf '%s' "$body" | grep -q 'version-update:semver-major'; then
-            exit 0
-          fi
           gh pr merge "$PR_NUMBER" --repo "$REPOSITORY" --auto --squash
