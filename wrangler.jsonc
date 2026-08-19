@@ -4,7 +4,12 @@
   "main": "src/worker.ts",
   "compatibility_date": "2026-08-19",
   "compatibility_flags": ["nodejs_compat"],
-  "routes": [{ "pattern": "thor-when.dylib.dev", "custom_domain": true }],
+  "routes": [
+    {
+      "pattern": "thor-when.dylib.dev",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -15,7 +20,9 @@
     {
       "binding": "DB",
       "database_name": "thor-when",
-      "migrations_dir": "migrations"
+      "migrations_dir": "migrations",
+      "database_id": "5d7b8ce0-aac4-4b24-becd-ebe4509168af",
+      "remote": true
     }
   ],
   "vars": {
