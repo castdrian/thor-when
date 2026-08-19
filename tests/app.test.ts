@@ -11,6 +11,14 @@ describe('thor when app', () => {
   it('renders the lowercase brand and funding links', () => {
     render(App)
     expect(screen.getAllByText('thor when?').length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute(
+      'href',
+      'https://github.com/castdrian/thor-when'
+    )
+    expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer'
+    )
     expect(screen.getByRole('link', { name: /donate/i })).toHaveAttribute(
       'href',
       'https://github.com/sponsors/castdrian'

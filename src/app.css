@@ -729,6 +729,19 @@ small {
   padding: 8px 12px;
   color: var(--button-ink);
 }
+.topbar-links .github-button {
+  min-height: 32px;
+  padding: 8px 12px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+}
+.topbar-links .github-button:hover {
+  color: var(--ink);
+  border-color: rgba(79, 111, 145, 0.5);
+  background: var(--paper-strong);
+}
 :root[data-theme="dark"] .confidence-pill {
   color: #a7e5c0;
   border-color: rgba(116, 213, 157, 0.35);

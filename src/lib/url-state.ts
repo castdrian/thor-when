@@ -1,4 +1,5 @@
 import type { EstimateInput, ShippingMethod, StorageVariant, ThorTier } from './types'
+import { decodeShareCode, encodeShareCode } from './share-code'
 import { SUPPORTED_COUNTRIES } from './transit'
 
 export { SUPPORTED_COUNTRIES } from './transit'
@@ -31,6 +32,8 @@ function isShippingMethod(value: string): value is ShippingMethod {
 
 export function readInputFromUrl(search: string): Partial<EstimateInput> {
   const params = new URLSearchParams(search)
+  const shareCode = params.get('s')
+  if (shareCode) return decodeShareCode(shareCode)
   const values: Partial<EstimateInput> = {}
   const color = params.get('color')
   if (color) values.color = color
@@ -48,6 +51,8 @@ export function readInputFromUrl(search: string): Partial<EstimateInput> {
 }
 
 export function writeInputToUrl(input: EstimateInput): string {
+  const shareCode = encodeShareCode(input)
+  if (shareCode) return `?s=${shareCode}`
   const params = new URLSearchParams()
   for (const key of keys) {
     const value = input[key]

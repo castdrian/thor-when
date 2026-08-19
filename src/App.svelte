@@ -255,6 +255,13 @@
     <div class="topbar-actions">
       <div class="topbar-links">
         <a
+          class="github-button"
+          href="https://github.com/castdrian/thor-when"
+          target="_blank"
+          rel="noopener noreferrer"
+          >github <span aria-hidden="true">↗</span></a
+        >
+        <a
           class="donate-button"
           href="https://github.com/sponsors/castdrian"
           target="_blank"

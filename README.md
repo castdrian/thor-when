@@ -22,6 +22,8 @@ The numbers are deliberately turned into a few plain-language steps:
 
 In other words, the algorithm is a measured “how fast has this queue been moving lately?” calculation with a safety margin based on how wrong similar past guesses were. It is not a promise and it does not need a visitor’s address or tracking number.
 
+Share links use a compact, checksummed token containing the guided selections and four-digit order prefix. They stay short without a server-side lookup and still restore the form exactly when opened.
+
 ## live reports and storage
 
 The app is hosted as a Cloudflare Worker with Workers Static Assets. The Worker serves the fast Svelte shell and handles `/api/reports` on the same origin. Reports are validated at the edge, then stored in a private Cloudflare D1 SQLite database containing only the selected model, four-digit bucket, country, carrier, dates, and an anonymous generated id. No name, email, address, tracking number, IP address, or analytics identifier is stored.
@@ -62,7 +64,7 @@ The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) th
 
 Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository Actions secrets. Use a long-lived Cloudflare API token with account read, D1 edit, Workers script edit, Workers route edit, DNS edit, and zone read permissions. The production Worker uses the `thor-when.dylib.dev` custom domain in the active `dylib.dev` zone; Wrangler creates the Worker DNS record and certificate after any previous Pages record is removed.
 
-The Worker’s static assets use `/` as their base path. The Vite configuration still supports a GitHub Pages project path when `VITE_BASE_PATH` is set, but the production workflow uses the Worker origin. The HTML includes lowercase `thor when?` Open Graph and Twitter metadata plus a dark 1200×630 PNG preview card at `og-card-dark.png` for link embeds.
+The Worker’s static assets use `/` as their base path. The Vite configuration still supports a GitHub Pages project path when `VITE_BASE_PATH` is set, but the production workflow uses the Worker origin. The HTML includes lowercase `thor when?` Open Graph and Twitter metadata; shared result URLs render a dark 1200×630 PNG card with that estimate’s details.
 
 ## privacy
 

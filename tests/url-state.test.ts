@@ -11,7 +11,13 @@ describe('shareable URL state', () => {
       country: 'Brazil',
       shippingMethod: 'standard' as const
     }
-    expect(readInputFromUrl(writeInputToUrl(input))).toEqual(input)
+    const shareUrl = writeInputToUrl(input)
+    expect(shareUrl).toMatch(/^\?s=[A-Za-z0-9_-]{8}$/)
+    expect(readInputFromUrl(shareUrl)).toEqual(input)
+  })
+
+  it('rejects a damaged compact share code', () => {
+    expect(readInputFromUrl('?s=AAAAAAAA')).toEqual({})
   })
 
   it('ignores crafted values outside the guided inputs', () => {

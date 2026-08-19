@@ -4,6 +4,8 @@ import { estimateShipment } from './lib/forecast'
 import { readInputFromUrl } from './lib/url-state'
 import { buildShareMetadata } from './lib/share-meta'
 import { buildOgImage } from './lib/og-image'
+import { Resvg } from '@cf-wasm/resvg/workerd'
+import { ogFonts } from './lib/og-font'
 import type { CommunityReport, EstimateInput } from './lib/types'
 
 interface ReportRow {
@@ -176,7 +178,7 @@ function addShareMetadata(html: string, url: URL): string {
   output = replaceMeta(output, 'property="og:description"', metadata.description)
   output = replaceMeta(output, 'property="og:url"', url.toString())
   output = replaceMeta(output, 'property="og:image"', image.toString())
-  output = replaceMeta(output, 'property="og:image:type"', 'image/svg+xml')
+  output = replaceMeta(output, 'property="og:image:type"', 'image/png')
   output = replaceMeta(output, 'property="og:image:alt"', metadata.imageAlt)
   output = replaceMeta(output, 'name="twitter:title"', metadata.title)
   output = replaceMeta(output, 'name="twitter:description"', metadata.description)
@@ -185,13 +187,18 @@ function addShareMetadata(html: string, url: URL): string {
   return output.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
 }
 
-function handleOgImage(url: URL): Response {
+async function handleOgImage(url: URL): Promise<Response> {
   const result = shareResult(url)
   if (!result?.ok) return new Response('not found', { status: 404 })
-  return new Response(buildOgImage(result), {
+  const image = await Resvg.async(buildOgImage(result), {
+    font: { fontBuffers: ogFonts, defaultFontFamily: 'Roboto', sansSerifFamily: 'Roboto' }
+  })
+  const png = image.render().asPng()
+  return new Response(png.buffer as ArrayBuffer, {
     headers: {
       'cache-control': 'public, max-age=300, s-maxage=3600',
-      'content-type': 'image/svg+xml; charset=utf-8'
+      'content-type': 'image/png',
+      'x-content-type-options': 'nosniff'
     }
   })
 }

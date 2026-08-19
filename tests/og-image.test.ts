@@ -4,7 +4,7 @@ import { estimateShipment } from '../src/lib/forecast'
 import { buildOgImage } from '../src/lib/og-image'
 
 describe('dynamic og image', () => {
-  it('renders the result card data into a dark svg image', () => {
+  it('renders the result card data into a dark svg source image', () => {
     const result = estimateShipment(
       {
         color: 'Black',
