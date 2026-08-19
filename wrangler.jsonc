@@ -6,8 +6,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "thor-when.dylib.dev",
-      "custom_domain": true
+      "pattern": "thor-when.dylib.dev/*",
+      "zone_id": "b0d85d4cddc9e3161051895d2602493d"
     }
   ],
   "assets": {
