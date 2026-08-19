@@ -62,6 +62,7 @@
       : 'light'
   let reportDispatchDate = ''
   let reportArrivalDate = ''
+  let reportConsent = false
   let reportSubmitting = false
   let reportNotice = ''
   const baseUrl = import.meta.env.BASE_URL
@@ -170,9 +171,10 @@
     if (
       !reportPrefixIsValid ||
       !reportSelectedConfigurationIsValid ||
-      !reportDispatchDate
+      !reportDispatchDate ||
+      !reportConsent
     ) {
-      reportNotice = 'complete the model, order bucket, and dispatch date.'
+      reportNotice = 'complete the model, bucket, dispatch date, and confirmation.'
       return
     }
     if (typeof fetch === 'undefined') {
@@ -193,7 +195,8 @@
           country: reportForm.country,
           shippingMethod: reportForm.shippingMethod,
           dispatchedOn: reportDispatchDate,
-          deliveredOn: reportArrivalDate || null
+          deliveredOn: reportArrivalDate || null,
+          consent: true
         })
       })
       const payload = (await response.json()) as { report?: CommunityReport; error?: string }
@@ -204,6 +207,7 @@
       mergeCommunityReports([payload.report])
       reportDispatchDate = ''
       reportArrivalDate = ''
+      reportConsent = false
       reportNotice = 'saved — this outcome is included in the live model now.'
     } catch {
       reportNotice = 'the live report service is unavailable. try again in a moment.'
@@ -602,6 +606,10 @@
             />
           </label>
         </div>
+        <label class="consent-row">
+          <input bind:checked={reportConsent} type="checkbox" />
+          <span>this is a real shipment outcome.</span>
+        </label>
         <button
           class="primary-button report-button"
           type="submit"
@@ -609,7 +617,8 @@
             reportSubmitting ||
             !reportPrefixIsValid ||
             !reportSelectedConfigurationIsValid ||
-            !reportDispatchDate
+            !reportDispatchDate ||
+            !reportConsent
           }
         >
           <span>{reportSubmitting ? 'saving report…' : 'save shipping report'}</span>

@@ -74,7 +74,7 @@ async function createReport(request: Request, env: Env): Promise<Response> {
     return json({ error: 'report is not valid JSON' }, 400)
   }
   const report = parseCommunityReportInput(payload)
-  if (!report) return json({ error: 'check the report fields' }, 400)
+  if (!report) return json({ error: 'check the report fields and confirmation' }, 400)
   const id = crypto.randomUUID()
   const submittedAt = new Date().toISOString()
   try {

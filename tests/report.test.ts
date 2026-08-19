@@ -9,7 +9,8 @@ const report = {
   country: 'South Korea',
   shippingMethod: 'standard',
   dispatchedOn: '2026-08-10',
-  deliveredOn: '2026-08-25'
+  deliveredOn: '2026-08-25',
+  consent: true
 }
 
 describe('community report validation', () => {
@@ -26,11 +27,8 @@ describe('community report validation', () => {
     })
   })
 
-  it('accepts trusted community data without an approval step', () => {
-    expect(parseCommunityReportInput(report, new Date('2026-08-30T00:00:00Z'))).not.toBeNull()
-  })
-
-  it('rejects invalid variants, dates, and order prefixes', () => {
+  it('rejects missing confirmation, variants, dates, and order prefixes', () => {
+    expect(parseCommunityReportInput({ ...report, consent: false })).toBeNull()
     expect(parseCommunityReportInput({ ...report, storageVariant: '64gb' })).toBeNull()
     expect(parseCommunityReportInput({ ...report, orderPrefix: '250' })).toBeNull()
     expect(

@@ -84,6 +84,7 @@ describe('thor when app', () => {
     await fireEvent.input(screen.getByLabelText('actual dispatch date'), {
       target: { value: '2026-08-10' }
     })
+    await fireEvent.click(screen.getByRole('checkbox'))
     await fireEvent.click(screen.getByRole('button', { name: /save shipping report/i }))
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/reports',
