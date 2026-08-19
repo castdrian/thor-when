@@ -2,7 +2,6 @@ interface __BaseEnv_Env {
   DB: D1Database
   ASSETS: Fetcher
   PUBLIC_ORIGIN: string
-  VITE_BASE_PATH: string
   VITE_SITE_URL: string
 }
 
@@ -22,7 +21,5 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 
 declare namespace NodeJS {
   interface ProcessEnv
-    extends StringifyValues<
-      Pick<Cloudflare.Env, 'PUBLIC_ORIGIN' | 'VITE_BASE_PATH' | 'VITE_SITE_URL'>
-    > {}
+    extends StringifyValues<Pick<Cloudflare.Env, 'PUBLIC_ORIGIN' | 'VITE_SITE_URL'>> {}
 }

@@ -58,14 +58,6 @@ bun run test:e2e
 bun run build
 ```
 
-## deployment
-
-The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) through `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, and a six-hour schedule. The workflow uses Bun, fetches fresh AYN data, runs formatting, Biome, strict type checks, unit tests, Playwright, and a production build, then provisions the `thor-when` D1 database if needed, applies migrations, and deploys the Worker.
-
-Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository Actions secrets. Use a long-lived Cloudflare API token with account read, D1 edit, Workers script edit, Workers route edit, DNS edit, and zone read permissions. The production Worker uses the `thor-when.dylib.dev` custom domain in the active `dylib.dev` zone; Wrangler creates the Worker DNS record and certificate after any previous Pages record is removed.
-
-The Worker’s static assets use `/` as their base path. The Vite configuration still supports a GitHub Pages project path when `VITE_BASE_PATH` is set, but the production workflow uses the Worker origin. The HTML includes lowercase `thor when?` Open Graph and Twitter metadata; shared result URLs render a dark 1200×630 PNG card with that estimate’s details.
-
 ## privacy
 
 thor when? stores no analytics, cookies, addresses, tracking numbers, or personal identifiers. The four-digit bucket stays in the shareable URL only when you choose to copy or bookmark it. Shipping reports contain only the selected model, bucket, destination country, carrier, and dispatch or arrival dates. Accepted reports are validated and used as aggregate timing evidence; never submit personal information.
