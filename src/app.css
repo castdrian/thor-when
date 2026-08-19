@@ -770,9 +770,6 @@ small {
   .topbar {
     padding-bottom: 54px;
   }
-  .topbar-links a:first-child {
-    display: none;
-  }
   .hero {
     padding-bottom: 48px;
   }

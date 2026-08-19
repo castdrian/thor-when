@@ -15,10 +15,6 @@ describe('thor when app', () => {
       'href',
       'https://github.com/sponsors/castdrian'
     )
-    expect(screen.getByRole('link', { name: /ko-fi/i })).toHaveAttribute(
-      'href',
-      'https://ko-fi.com/castdrian'
-    )
     expect(screen.getByRole('link', { name: /donate/i })).toHaveAttribute(
       'rel',
       'noopener noreferrer'

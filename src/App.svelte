@@ -255,12 +255,6 @@
     <div class="topbar-actions">
       <div class="topbar-links">
         <a
-          href="https://www.ayntec.com/pages/shipment-dashboard"
-          target="_blank"
-          rel="noopener noreferrer"
-          >source dashboard <span aria-hidden="true">↗</span></a
-        >
-        <a
           class="donate-button"
           href="https://github.com/sponsors/castdrian"
           target="_blank"
@@ -600,9 +594,6 @@
     <div class="footer-brand"><span class="wordmark-dot"></span><span>thor when?</span></div>
     <p>an unofficial estimate for people waiting on their thor.</p>
     <div class="footer-links">
-      <a href="https://ko-fi.com/castdrian" target="_blank" rel="noopener noreferrer"
-        >ko-fi <span aria-hidden="true">↗</span></a
-      >
       <a href="https://github.com/castdrian/thor-when" target="_blank" rel="noopener noreferrer"
         >source <span aria-hidden="true">↗</span></a
       >
