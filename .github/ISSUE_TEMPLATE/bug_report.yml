@@ -1,0 +1,29 @@
+name: bug report
+description: report an incorrect estimate or a broken interface
+title: '[bug] '
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: what happened?
+      description: describe what you expected and what you saw
+    validations:
+      required: true
+  - type: input
+    id: configuration
+    attributes:
+      label: Thor configuration
+      placeholder: white pro standard
+  - type: input
+    id: prefix
+    attributes:
+      label: order prefix
+      placeholder: 2500
+  - type: textarea
+    id: environment
+    attributes:
+      label: browser and device
+    validations:
+      required: true

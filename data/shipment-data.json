@@ -1,0 +1,800 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-08-19T18:05:04.968Z",
+  "sourceUrl": "https://www.ayntec.com/pages/shipment-dashboard",
+  "sourceLatestDate": "2026-08-18",
+  "records": [
+    {
+      "date": "2026-07-03",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2234,
+      "upperPrefix": 2342,
+      "sourceLabel": "AYN Thor White Max（512）: 2234xx--2342xx"
+    },
+    {
+      "date": "2026-07-03",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2272,
+      "upperPrefix": 2292,
+      "sourceLabel": "AYN Thor Rainbow Max: 2272xx--2292xx"
+    },
+    {
+      "date": "2026-07-03",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2228,
+      "upperPrefix": 2248,
+      "sourceLabel": "AYN Thor White Max: 2228xx--2248xx"
+    },
+    {
+      "date": "2026-07-03",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2235,
+      "upperPrefix": 2250,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2235xx--2250xx"
+    },
+    {
+      "date": "2026-07-06",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2342,
+      "upperPrefix": 2350,
+      "sourceLabel": "AYN Thor White Max（512）: 2342xx--2350xx"
+    },
+    {
+      "date": "2026-07-06",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2254,
+      "upperPrefix": 2280,
+      "sourceLabel": "AYN Thor Black Max: 2254xx--2280xx"
+    },
+    {
+      "date": "2026-07-07",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2202,
+      "upperPrefix": 2324,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2202xx--2324xx"
+    },
+    {
+      "date": "2026-07-07",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2216,
+      "upperPrefix": 2252,
+      "sourceLabel": "AYN Thor Clear Purple Max: 2216xx--2252xx"
+    },
+    {
+      "date": "2026-07-07",
+      "color": "Black",
+      "tier": "lite",
+      "storageVariant": "standard",
+      "lowerPrefix": 2355,
+      "upperPrefix": 2425,
+      "sourceLabel": "AYN Thor Black Lite: 2355xx--2425xx"
+    },
+    {
+      "date": "2026-07-07",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2254,
+      "upperPrefix": 2270,
+      "sourceLabel": "AYN Thor Black Base: 2254xx--2270xx"
+    },
+    {
+      "date": "2026-07-08",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2350,
+      "upperPrefix": 2403,
+      "sourceLabel": "AYN Thor White Max（512）: 2350xx--2403xx"
+    },
+    {
+      "date": "2026-07-08",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2324,
+      "upperPrefix": 2330,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2324xx--2330xx"
+    },
+    {
+      "date": "2026-07-08",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2251,
+      "upperPrefix": 2328,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2251xx--2328xx"
+    },
+    {
+      "date": "2026-07-09",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2330,
+      "upperPrefix": 2343,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2330xx--2343xx"
+    },
+    {
+      "date": "2026-07-09",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2328,
+      "upperPrefix": 2353,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2328xx--2353xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2280,
+      "upperPrefix": 2299,
+      "sourceLabel": "AYN Thor Black Max: 2280xx--2299xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2237,
+      "upperPrefix": 2375,
+      "sourceLabel": "AYN Thor White Pro: 2237xx--2375xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2250,
+      "upperPrefix": 2335,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2250xx--2335xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2403,
+      "upperPrefix": 2458,
+      "sourceLabel": "AYN Thor White Max（512）: 2403xx--2458xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2343,
+      "upperPrefix": 2355,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2343xx--2355xx"
+    },
+    {
+      "date": "2026-07-10",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2353,
+      "upperPrefix": 2378,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2353xx--2378xx"
+    },
+    {
+      "date": "2026-07-13",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2254,
+      "upperPrefix": 2316,
+      "sourceLabel": "AYN Thor Black Base: 2254xx--2316xx"
+    },
+    {
+      "date": "2026-07-13",
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2375,
+      "upperPrefix": 2411,
+      "sourceLabel": "AYN Thor White Pro: 2375xx--2411xx"
+    },
+    {
+      "date": "2026-07-13",
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2308,
+      "upperPrefix": 2411,
+      "sourceLabel": "AYN Thor Rainbow Pro: 2308xx--2411xx"
+    },
+    {
+      "date": "2026-07-13",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2335,
+      "upperPrefix": 2342,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2335xx--2342xx"
+    },
+    {
+      "date": "2026-07-13",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2142,
+      "upperPrefix": 2314,
+      "sourceLabel": "AYN Thor Black Max（512）: 2142xx--2314xx"
+    },
+    {
+      "date": "2026-07-15",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2316,
+      "upperPrefix": 2353,
+      "sourceLabel": "AYN Thor Black Base: 2316xx--2353xx"
+    },
+    {
+      "date": "2026-07-15",
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2271,
+      "upperPrefix": 2314,
+      "sourceLabel": "AYN Thor Black Pro: 2271xx--2314xx"
+    },
+    {
+      "date": "2026-07-15",
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2411,
+      "upperPrefix": 2462,
+      "sourceLabel": "AYN Thor White Pro: 2411xx--2462xx"
+    },
+    {
+      "date": "2026-07-15",
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2411,
+      "upperPrefix": 2430,
+      "sourceLabel": "AYN Thor Rainbow Pro: 2411xx--2430xx"
+    },
+    {
+      "date": "2026-07-15",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2342,
+      "upperPrefix": 2398,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2342xx--2398xx"
+    },
+    {
+      "date": "2026-07-16",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2248,
+      "upperPrefix": 2294,
+      "sourceLabel": "AYN Thor White Max: 2248xx--2294xx"
+    },
+    {
+      "date": "2026-07-16",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2299,
+      "upperPrefix": 2358,
+      "sourceLabel": "AYN Thor Black Max: 2299xx--2358xx"
+    },
+    {
+      "date": "2026-07-16",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2292,
+      "upperPrefix": 2356,
+      "sourceLabel": "AYN Thor Rainbow Max: 2292xx--2356xx"
+    },
+    {
+      "date": "2026-07-16",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2355,
+      "upperPrefix": 2365,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2355xx--2365xx"
+    },
+    {
+      "date": "2026-07-17",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2294,
+      "upperPrefix": 2316,
+      "sourceLabel": "AYN Thor White Max: 2294xx--2316xx"
+    },
+    {
+      "date": "2026-07-17",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2358,
+      "upperPrefix": 2369,
+      "sourceLabel": "AYN Thor Black Max: 2358xx--2369xx"
+    },
+    {
+      "date": "2026-07-17",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2356,
+      "upperPrefix": 2366,
+      "sourceLabel": "AYN Thor Rainbow Max: 2356xx--2366xx"
+    },
+    {
+      "date": "2026-07-17",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2252,
+      "upperPrefix": 2319,
+      "sourceLabel": "AYN Thor Clear Purple Max: 2252xx--2319xx"
+    },
+    {
+      "date": "2026-07-17",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2314,
+      "upperPrefix": 2318,
+      "sourceLabel": "AYN Thor Black Max（512）: 2314xx--2318xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2314,
+      "upperPrefix": 2430,
+      "sourceLabel": "AYN Thor Black Pro: 2314xx--2430xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2430,
+      "upperPrefix": 2491,
+      "sourceLabel": "AYN Thor Rainbow Pro: 2430xx--2491xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2366,
+      "upperPrefix": 2450,
+      "sourceLabel": "AYN Thor Rainbow Max: 2366xx--2450xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2398,
+      "upperPrefix": 2465,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2398xx--2465xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2458,
+      "upperPrefix": 2551,
+      "sourceLabel": "AYN Thor White Max（512）: 2458xx--2551xx"
+    },
+    {
+      "date": "2026-08-07",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2378,
+      "upperPrefix": 2429,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2378xx--2429xx"
+    },
+    {
+      "date": "2026-08-09",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2318,
+      "upperPrefix": 2424,
+      "sourceLabel": "AYN Thor Black Max（512）: 2318xx--2424xx"
+    },
+    {
+      "date": "2026-08-09",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2365,
+      "upperPrefix": 2467,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2365xx--2467xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2369,
+      "upperPrefix": 2439,
+      "sourceLabel": "AYN Thor Black Max: 2369xx--2439xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2450,
+      "upperPrefix": 2485,
+      "sourceLabel": "AYN Thor Rainbow Max: 2450xx--2485xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2316,
+      "upperPrefix": 2345,
+      "sourceLabel": "AYN Thor White Max: 2316xx--2345xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2319,
+      "upperPrefix": 2386,
+      "sourceLabel": "AYN Thor Clear Purple Max: 2319xx--2386xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2424,
+      "upperPrefix": 2472,
+      "sourceLabel": "AYN Thor Black Max（512）: 2424xx--2472xx"
+    },
+    {
+      "date": "2026-08-10",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2467,
+      "upperPrefix": 2472,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2467xx--2472xx"
+    },
+    {
+      "date": "2026-08-11",
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2430,
+      "upperPrefix": 2448,
+      "sourceLabel": "AYN Thor Black Pro: 2430xx--2448xx"
+    },
+    {
+      "date": "2026-08-11",
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2491,
+      "upperPrefix": 2502,
+      "sourceLabel": "AYN Thor Rainbow Pro: 2491xx--2502xx"
+    },
+    {
+      "date": "2026-08-11",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2345,
+      "upperPrefix": 2361,
+      "sourceLabel": "AYN Thor White Max: 2345xx--2361xx"
+    },
+    {
+      "date": "2026-08-11",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2465,
+      "upperPrefix": 2484,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2465xx--2484xx"
+    },
+    {
+      "date": "2026-08-11",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2429,
+      "upperPrefix": 2446,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2429xx--2446xx"
+    },
+    {
+      "date": "2026-08-12",
+      "color": "Black",
+      "tier": "lite",
+      "storageVariant": "standard",
+      "lowerPrefix": 2425,
+      "upperPrefix": 2478,
+      "sourceLabel": "AYN Thor Black Lite: 2425xx--2478xx"
+    },
+    {
+      "date": "2026-08-12",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2353,
+      "upperPrefix": 2428,
+      "sourceLabel": "AYN Thor Black Base: 2353xx--2428xx"
+    },
+    {
+      "date": "2026-08-12",
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2462,
+      "upperPrefix": 2483,
+      "sourceLabel": "AYN Thor White Pro: 2462xx--2483xx"
+    },
+    {
+      "date": "2026-08-12",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2551,
+      "upperPrefix": 2580,
+      "sourceLabel": "AYN Thor White Max（512）: 2551xx--2580xx"
+    },
+    {
+      "date": "2026-08-13",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2484,
+      "upperPrefix": 2498,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2484xx--2498xx"
+    },
+    {
+      "date": "2026-08-13",
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2472,
+      "upperPrefix": 2490,
+      "sourceLabel": "AYN Thor Black Max（512）: 2472xx--2490xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2428,
+      "upperPrefix": 2431,
+      "sourceLabel": "AYN Thor Black Base: 2428xx--2431xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2448,
+      "upperPrefix": 2471,
+      "sourceLabel": "AYN Thor Black Pro: 2448xx--2471xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2485,
+      "upperPrefix": 2493,
+      "sourceLabel": "AYN Thor Rainbow Max: 2485xx--2493xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2361,
+      "upperPrefix": 2381,
+      "sourceLabel": "AYN Thor White Max: 2361xx--2381xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2386,
+      "upperPrefix": 2414,
+      "sourceLabel": "AYN Thor Clear Purple Max: 2386xx--2414xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2580,
+      "upperPrefix": 2627,
+      "sourceLabel": "AYN Thor White Max（512）: 2580xx--2627xx"
+    },
+    {
+      "date": "2026-08-15",
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2446,
+      "upperPrefix": 2490,
+      "sourceLabel": "AYN Thor Clear Purple Max (512): 2446xx--2490xx"
+    },
+    {
+      "date": "2026-08-17",
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2471,
+      "upperPrefix": 2493,
+      "sourceLabel": "AYN Thor Black Pro: 2471xx--2493xx"
+    },
+    {
+      "date": "2026-08-17",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2493,
+      "upperPrefix": 2500,
+      "sourceLabel": "AYN Thor Rainbow Max: 2493xx--2500xx"
+    },
+    {
+      "date": "2026-08-17",
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2502,
+      "upperPrefix": 2529,
+      "sourceLabel": "AYN Thor Rainbow Pro: 2502xx--2529xx"
+    },
+    {
+      "date": "2026-08-17",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512",
+      "lowerPrefix": 2472,
+      "upperPrefix": 2600,
+      "sourceLabel": "AYN Thor Rainbow Max（512）: 2472xx--2600xx"
+    },
+    {
+      "date": "2026-08-18",
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard",
+      "lowerPrefix": 2428,
+      "upperPrefix": 2444,
+      "sourceLabel": "AYN Thor Black Base: 2428xx--2444xx"
+    },
+    {
+      "date": "2026-08-18",
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard",
+      "lowerPrefix": 2500,
+      "upperPrefix": 2560,
+      "sourceLabel": "AYN Thor Rainbow Max: 2500xx--2560xx"
+    },
+    {
+      "date": "2026-08-18",
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2483,
+      "upperPrefix": 2573,
+      "sourceLabel": "AYN Thor White Pro: 2483xx--2573xx"
+    },
+    {
+      "date": "2026-08-18",
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard",
+      "lowerPrefix": 2498,
+      "upperPrefix": 2530,
+      "sourceLabel": "AYN Thor Clear Purple Pro: 2498xx--2530xx"
+    }
+  ],
+  "configurations": [
+    {
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "512"
+    },
+    {
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "White",
+      "tier": "max",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Clear Purple",
+      "tier": "pro",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Rainbow",
+      "tier": "max",
+      "storageVariant": "512"
+    },
+    {
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Black",
+      "tier": "lite",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Black",
+      "tier": "base",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Clear Purple",
+      "tier": "max",
+      "storageVariant": "512"
+    },
+    {
+      "color": "White",
+      "tier": "pro",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Rainbow",
+      "tier": "pro",
+      "storageVariant": "standard"
+    },
+    {
+      "color": "Black",
+      "tier": "max",
+      "storageVariant": "512"
+    },
+    {
+      "color": "Black",
+      "tier": "pro",
+      "storageVariant": "standard"
+    }
+  ]
+}
