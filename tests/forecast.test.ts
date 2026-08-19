@@ -73,7 +73,7 @@ describe('shipment estimates', () => {
     expect(estimateShipment({ ...baseInput, orderPrefix: '25' }, source)).toEqual({
       ok: false,
       code: 'invalid-prefix',
-      message: 'enter the four digits before the xx in your order number.'
+      message: 'enter the first four digits of your order number.'
     })
   })
 

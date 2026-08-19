@@ -20,9 +20,11 @@
     writeInputToUrl
   } from './lib/url-state'
   import type {
+    CommunityReport,
     Confidence,
     EstimateInput,
     EstimateResult,
+    ShipmentDataset,
     ShippingMethod,
     StorageVariant,
     ThorTier
@@ -40,9 +42,18 @@
     storageVariant:
       (urlInput.storageVariant as StorageVariant) ?? defaultConfiguration.storageVariant,
     orderPrefix: urlInput.orderPrefix ?? '',
-    country: urlInput.country ?? 'United States',
-    shippingMethod: (urlInput.shippingMethod as ShippingMethod) ?? 'dhl'
+    country: urlInput.country ?? 'South Korea',
+    shippingMethod: (urlInput.shippingMethod as ShippingMethod) ?? 'standard'
   }
+  let reportForm: EstimateInput = {
+    color: form.color,
+    tier: form.tier,
+    storageVariant: form.storageVariant,
+    orderPrefix: '',
+    country: 'South Korea',
+    shippingMethod: 'standard'
+  }
+  let liveDataset: ShipmentDataset = dataset
   let result: EstimateResult | null = null
   let hasSubmitted = false
   let theme: 'light' | 'dark' =
@@ -52,28 +63,45 @@
   let reportDispatchDate = ''
   let reportArrivalDate = ''
   let reportConsent = false
+  let reportSubmitting = false
   let reportNotice = ''
   const baseUrl = import.meta.env.BASE_URL
-  const reportIssueUrl = 'https://github.com/castdrian/thor-when/issues/new'
   const today = new Date().toISOString().slice(0, 10)
 
   const colors = getColors(dataset)
   const tiers = getTiers(dataset)
-  let storageVariants = getStorageVariants(form.tier, dataset)
+  let storageVariants = getStorageVariants(form.tier, liveDataset)
+  let reportStorageVariants = getStorageVariants(reportForm.tier, liveDataset)
 
-  $: selectedConfigurationIsValid = hasConfiguration(form, dataset)
+  $: selectedConfigurationIsValid = hasConfiguration(form, liveDataset)
   $: configurationLabel = selectedConfigurationIsValid
     ? displayConfiguration(form)
     : 'choose a valid combination'
   $: prefixIsValid = /^\d{4}$/.test(String(form.orderPrefix))
   $: prefixHasError = String(form.orderPrefix).length > 0 && !prefixIsValid
-  $: datasetAvailable = dataset.records.length > 0 && dataset.configurations.length > 0
-  $: datasetIsStale = isDatasetStale(dataset)
+  $: datasetAvailable = liveDataset.records.length > 0 && liveDataset.configurations.length > 0
+  $: datasetIsStale = isDatasetStale(liveDataset)
+  $: reportSelectedConfigurationIsValid = hasConfiguration(reportForm, liveDataset)
+  $: reportConfigurationLabel = reportSelectedConfigurationIsValid
+    ? displayConfiguration(reportForm)
+    : 'choose a valid combination'
+  $: reportPrefixIsValid = /^\d{4}$/.test(String(reportForm.orderPrefix))
+  $: reportPrefixHasError = String(reportForm.orderPrefix).length > 0 && !reportPrefixIsValid
 
   function handleTierChange() {
-    storageVariants = getStorageVariants(form.tier, dataset)
+    storageVariants = getStorageVariants(form.tier, liveDataset)
     if (!storageVariants.includes(form.storageVariant)) {
       form = { ...form, storageVariant: storageVariants[0] ?? form.storageVariant }
+    }
+  }
+
+  function handleReportTierChange() {
+    reportStorageVariants = getStorageVariants(reportForm.tier, liveDataset)
+    if (!reportStorageVariants.includes(reportForm.storageVariant)) {
+      reportForm = {
+        ...reportForm,
+        storageVariant: reportStorageVariants[0] ?? reportForm.storageVariant
+      }
     }
   }
 
@@ -93,6 +121,27 @@
     applyTheme(theme === 'dark' ? 'light' : 'dark', true)
   }
 
+  function mergeCommunityReports(reports: CommunityReport[]) {
+    const byId = new Map((liveDataset.communityReports ?? []).map((report) => [report.id, report]))
+    for (const report of reports) byId.set(report.id, report)
+    liveDataset = { ...liveDataset, communityReports: [...byId.values()] }
+    storageVariants = getStorageVariants(form.tier, liveDataset)
+    reportStorageVariants = getStorageVariants(reportForm.tier, liveDataset)
+    if (prefixIsValid && selectedConfigurationIsValid) result = estimateShipment(form, liveDataset)
+  }
+
+  async function loadCommunityReports() {
+    if (typeof fetch === 'undefined' || import.meta.env.MODE === 'test') return
+    try {
+      const response = await fetch('/api/reports', { headers: { accept: 'application/json' } })
+      if (!response.ok) return
+      const payload = (await response.json()) as { reports?: CommunityReport[] }
+      if (Array.isArray(payload.reports)) mergeCommunityReports(payload.reports)
+    } catch {
+      return
+    }
+  }
+
   onMount(() => {
     let savedTheme = ''
     try {
@@ -103,44 +152,72 @@
     const systemTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     applyTheme(savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : systemTheme)
     handleTierChange()
+    handleReportTierChange()
     if (prefixIsValid && selectedConfigurationIsValid) {
-      result = estimateShipment(form, dataset)
+      result = estimateShipment(form, liveDataset)
       hasSubmitted = true
     }
+    void loadCommunityReports()
+    if (import.meta.env.MODE === 'test') return
+    const pollId = window.setInterval(() => void loadCommunityReports(), 60_000)
+    return () => window.clearInterval(pollId)
   })
 
   function submitEstimate() {
     hasSubmitted = true
     const query = writeInputToUrl(form)
     if (typeof window !== 'undefined') window.history.replaceState({}, '', query)
-    result = estimateShipment(form, dataset)
+    result = estimateShipment(form, liveDataset)
   }
 
-  function openShippingReport() {
-    if (!prefixIsValid || !selectedConfigurationIsValid || !reportDispatchDate || !reportConsent) {
-      reportNotice = 'choose your variant, enter a four-digit bucket, add a dispatch date, and confirm the privacy note.'
+  async function submitShippingReport() {
+    if (
+      !reportPrefixIsValid ||
+      !reportSelectedConfigurationIsValid ||
+      !reportDispatchDate ||
+      !reportConsent
+    ) {
+      reportNotice =
+        'choose the model, enter the first four digits, add a dispatch date, and confirm the privacy note.'
       return
     }
-    const body = [
-      `Thor color: ${form.color}`,
-      `Thor tier: ${form.tier}`,
-      `Thor storage: ${form.storageVariant}`,
-      `Order bucket: ${form.orderPrefix}`,
-      `Destination country: ${form.country}`,
-      `Shipping method: ${form.shippingMethod}`,
-      `Dispatch date: ${reportDispatchDate}`,
-      `Arrival date: ${reportArrivalDate || 'not yet delivered'}`,
-      'Consent: yes',
-      '',
-      'I confirm this is an actual shipping outcome and contains no personal information.'
-    ].join('\n')
-    const params = new URLSearchParams({
-      title: `shipping report ${form.orderPrefix}xx`,
-      labels: 'shipping-report',
-      body
-    })
-    window.open(`${reportIssueUrl}?${params.toString()}`, '_blank', 'noopener,noreferrer')
-    reportNotice = 'GitHub opened a public report draft. Review it, remove anything personal, and submit it there.'
+    if (typeof fetch === 'undefined') {
+      reportNotice = 'live reporting is unavailable in this browser.'
+      return
+    }
+    reportSubmitting = true
+    reportNotice = ''
+    try {
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          color: reportForm.color,
+          tier: reportForm.tier,
+          storageVariant: reportForm.storageVariant,
+          orderPrefix: reportForm.orderPrefix,
+          country: reportForm.country,
+          shippingMethod: reportForm.shippingMethod,
+          dispatchedOn: reportDispatchDate,
+          deliveredOn: reportArrivalDate || null,
+          consent: true
+        })
+      })
+      const payload = (await response.json()) as { report?: CommunityReport; error?: string }
+      if (!response.ok || !payload.report) {
+        reportNotice = payload.error ?? 'the report could not be saved right now.'
+        return
+      }
+      mergeCommunityReports([payload.report])
+      reportDispatchDate = ''
+      reportArrivalDate = ''
+      reportConsent = false
+      reportNotice = 'saved — this outcome is included in the live model now.'
+    } catch {
+      reportNotice = 'the live report service is unavailable. try again in a moment.'
+    } finally {
+      reportSubmitting = false
+    }
   }
 
   function confidenceLabel(confidence: Confidence): string {
@@ -189,18 +266,19 @@
     </a>
     <div class="topbar-actions">
       <div class="topbar-links">
-      <a
-        href="https://www.ayntec.com/pages/shipment-dashboard"
-        target="_blank"
-        rel="noopener noreferrer"
-        >source dashboard <span aria-hidden="true">↗</span></a
-      >
-      <a
-        href="https://github.com/sponsors/castdrian"
-        target="_blank"
-        rel="noopener noreferrer"
-        >support the project <span aria-hidden="true">↗</span></a
-      >
+        <a
+          href="https://www.ayntec.com/pages/shipment-dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          >source dashboard <span aria-hidden="true">↗</span></a
+        >
+        <a
+          class="donate-button"
+          href="https://github.com/sponsors/castdrian"
+          target="_blank"
+          rel="noopener noreferrer"
+          >donate <span aria-hidden="true">♥</span></a
+        >
       </div>
       <button
         class="theme-toggle"
@@ -221,9 +299,9 @@
       {#if !datasetAvailable}
         shipment source unavailable
       {:else if datasetIsStale}
-        source may be stale · refreshed {formatFreshness(dataset.fetchedAt)}
+        source may be stale · refreshed {formatFreshness(liveDataset.fetchedAt)}
       {:else}
-        live queue reading · updated {formatFreshness(dataset.fetchedAt)}
+        live queue reading · updated {formatFreshness(liveDataset.fetchedAt)}
       {/if}
     </div>
     {#if datasetIsStale || !datasetAvailable}
@@ -245,7 +323,7 @@
 
   <section class="estimator-layout" aria-label="thor shipping estimator">
     <form class="glass-card form-card" on:submit|preventDefault={submitEstimate}>
-      <div class="card-kicker"><span>01</span> your configuration</div>
+      <div class="card-kicker">your configuration</div>
       <div class="field-grid">
         <label>
           <span>color</span>
@@ -285,29 +363,29 @@
         {/if}
       </div>
 
-      <div class="card-kicker second-kicker"><span>02</span> your order signal</div>
+      <div class="card-kicker second-kicker">your order signal</div>
       <label class="prefix-field">
-        <span>four digits before the xx</span>
+        <span>first four digits of your order number</span>
         <div class="prefix-input-wrap">
           <input
             bind:value={form.orderPrefix}
             inputmode="numeric"
             maxlength="4"
             placeholder="2500"
+            aria-label="First four digits of your order number"
             aria-describedby={prefixHasError ? 'prefix-help prefix-error' : 'prefix-help'}
             aria-invalid={prefixHasError}
           />
-          <span aria-hidden="true">xx</span>
         </div>
         <small id="prefix-help"
-          >your order may look like 2500xx. we use the four visible digits as a 100-order bucket.</small
+          >for example, 2500. we use these four digits as a 100-order bucket.</small
         >
         {#if prefixHasError}
           <small class="field-error" id="prefix-error">enter exactly four digits.</small>
         {/if}
       </label>
 
-      <div class="card-kicker second-kicker"><span>03</span> your route</div>
+      <div class="card-kicker second-kicker">your route</div>
       <div class="field-grid route-grid">
         <label>
           <span>destination</span>
@@ -346,10 +424,7 @@
         <section class="glass-card result-card" aria-live="polite" aria-labelledby="result-title">
           <div class="result-heading-row">
             <div>
-              <div class="card-kicker">
-                <span>result</span>
-                {statusLabel(result.dispatch.status)}
-              </div>
+              <div class="card-kicker">result · {statusLabel(result.dispatch.status)}</div>
               <h2 id="result-title">{resultTitle(result.dispatch.status)}</h2>
             </div>
             <span
@@ -379,7 +454,7 @@
           </div>
 
           <div class="result-detail-grid">
-            <div><span>frontier read</span><strong>{result.dispatch.frontierPrefix}xx</strong></div>
+            <div><span>frontier read</span><strong>{result.dispatch.frontierPrefix}</strong></div>
             <div>
               <span>signal</span><strong
                 >{result.dispatch.observations
@@ -432,9 +507,9 @@
           </p>
           <div class="empty-meta">
             {#if datasetAvailable}
-              <span>observed batches</span><strong>{dataset.records.length}</strong><span
+              <span>observed batches</span><strong>{liveDataset.records.length}</strong><span
                 >source through</span
-              ><strong>{formatDate(dataset.sourceLatestDate)}</strong>
+              ><strong>{formatDate(liveDataset.sourceLatestDate)}</strong>
             {:else}
               <span>source status</span><strong>unavailable</strong>
             {/if}
@@ -446,31 +521,95 @@
         <span class="method-mark">i</span>
         <p>
           <strong>how we read it.</strong> AYN publishes ranges, not individual order promises. thor when?
-          models the moving frontier and shows a range around it. arrival uses AYN’s published carrier
-          transit windows; customs and holidays can still move the real date.
+          tracks the moving frontier, tests two pace guesses against past batches, and wraps the better
+          guess in a window based on its past misses. arrival uses AYN’s carrier transit windows; customs
+          and holidays can still move the real date.
         </p>
       </div>
     </div>
   </section>
 
   <section class="report-card glass-card" aria-labelledby="report-title">
-    <div class="card-kicker"><span>04</span> improve the next read</div>
+    <div class="card-kicker">improve the next read</div>
     <div class="report-layout">
       <div>
         <h2 id="report-title">when yours ships, tell the next person.</h2>
         <p>
-          share the real dispatch or arrival milestone for this selected bucket. Reports are
-          public GitHub issues, checked by the refresh job, and used only as anonymous timing
-          evidence.
+          choose the Thor model and route here, then share the real dispatch or arrival milestone.
+          It is stored without names or addresses and is included in the live model as soon as it is
+          accepted.
         </p>
         <p class="report-safety">
           never include a name, address, email, tracking number, or order link.
         </p>
       </div>
-      <form class="report-form" on:submit|preventDefault={openShippingReport}>
+      <form class="report-form" on:submit|preventDefault={submitShippingReport}>
+        <div class="report-field-grid">
+          <label>
+            <span>color</span>
+            <select bind:value={reportForm.color} aria-label="Report Thor color">
+              {#each colors as color (color)}
+                <option value={color}>{color}</option>
+              {/each}
+            </select>
+          </label>
+          <label>
+            <span>tier</span>
+            <select
+              bind:value={reportForm.tier}
+              aria-label="Report Thor tier"
+              on:change={handleReportTierChange}
+            >
+              {#each tiers as tier (tier)}
+                <option value={tier}>{displayTier(tier)}</option>
+              {/each}
+            </select>
+          </label>
+          <label>
+            <span>storage</span>
+            <select bind:value={reportForm.storageVariant} aria-label="Report Thor storage">
+              {#each reportStorageVariants as storage (storage)}
+                <option value={storage}>{displayStorage(storage)}</option>
+              {/each}
+            </select>
+          </label>
+        </div>
         <div class="report-summary">
           <span>reporting</span>
-          <strong>{configurationLabel} · {String(form.orderPrefix || '----')}xx</strong>
+          <strong>{reportConfigurationLabel}</strong>
+        </div>
+        <label class="prefix-field">
+          <span>first four digits of the order number</span>
+          <input
+            bind:value={reportForm.orderPrefix}
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="2500"
+            aria-label="Report order number first four digits"
+            aria-describedby={reportPrefixHasError ? 'report-prefix-help report-prefix-error' : 'report-prefix-help'}
+            aria-invalid={reportPrefixHasError}
+          />
+          <small id="report-prefix-help">these four digits identify the 100-order bucket.</small>
+          {#if reportPrefixHasError}
+            <small class="field-error" id="report-prefix-error">enter exactly four digits.</small>
+          {/if}
+        </label>
+        <div class="report-route-grid">
+          <label>
+            <span>destination</span>
+            <select bind:value={reportForm.country} aria-label="Report destination country">
+              {#each SUPPORTED_COUNTRIES as country (country)}
+                <option value={country}>{country}</option>
+              {/each}
+            </select>
+          </label>
+          <label>
+            <span>shipping method</span>
+            <select bind:value={reportForm.shippingMethod} aria-label="Report shipping method">
+              <option value="dhl">DHL</option>
+              <option value="standard">Standard / 4PX</option>
+            </select>
+          </label>
         </div>
         <div class="report-date-grid">
           <label>
@@ -489,14 +628,20 @@
         </div>
         <label class="consent-row">
           <input bind:checked={reportConsent} type="checkbox" />
-          <span>I’m sharing an actual outcome and understand the report is public.</span>
+          <span>I’m sharing an actual outcome and agree that it can improve future estimates.</span>
         </label>
         <button
           class="primary-button report-button"
           type="submit"
-          disabled={!prefixIsValid || !selectedConfigurationIsValid || !reportDispatchDate || !reportConsent}
+          disabled={
+            reportSubmitting ||
+            !reportPrefixIsValid ||
+            !reportSelectedConfigurationIsValid ||
+            !reportDispatchDate ||
+            !reportConsent
+          }
         >
-          <span>open GitHub report</span>
+          <span>{reportSubmitting ? 'saving report…' : 'save shipping report'}</span>
           <span class="button-arrow" aria-hidden="true">↗</span>
         </button>
         {#if reportNotice}
@@ -510,12 +655,6 @@
     <div class="footer-brand"><span class="wordmark-dot"></span><span>thor when?</span></div>
     <p>an unofficial estimate for people waiting on their thor.</p>
     <div class="footer-links">
-      <a
-        class="donate-button"
-        href="https://github.com/sponsors/castdrian"
-        target="_blank"
-        rel="noopener noreferrer">donate <span aria-hidden="true">♥</span></a
-      >
       <a href="https://ko-fi.com/castdrian" target="_blank" rel="noopener noreferrer"
         >ko-fi <span aria-hidden="true">↗</span></a
       >
@@ -557,7 +696,7 @@
       >
     </div>
     <p class="footer-fineprint">
-      data refreshes every six hours when the source is available · no tracking · built with
+      AYN refreshes every six hours · community reports update instantly · no tracking · built with
       patience
     </p>
   </footer>

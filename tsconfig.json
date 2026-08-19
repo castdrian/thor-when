@@ -9,11 +9,12 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "strict": true,
-    "types": ["node", "vite/client", "vitest/globals"]
+    "types": ["node", "vite/client", "vitest/globals", "@cloudflare/workers-types"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.svelte",
+    "worker-configuration.d.ts",
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "vite.config.ts",

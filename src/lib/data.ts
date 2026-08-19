@@ -1,5 +1,4 @@
 import rawDataset from '../../data/shipment-data.json'
-import rawCommunityReports from '../../data/community-reports.json'
 import {
   THOR_COLORS,
   THOR_TIER_ORDER,
@@ -15,7 +14,7 @@ export const MAX_UI_SOURCE_AGE_DAYS = 14
 
 export const dataset = {
   ...(rawDataset as ShipmentDataset),
-  communityReports: rawCommunityReports.reports
+  communityReports: []
 } as ShipmentDataset
 
 export function isDatasetStale(source: ShipmentDataset = dataset, now = new Date()): boolean {

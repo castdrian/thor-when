@@ -24,6 +24,8 @@
   --field-focus: rgba(255, 255, 255, 0.82);
   --panel: rgba(255, 255, 255, 0.4);
   --panel-border: rgba(255, 255, 255, 0.64);
+  --orb-a: rgba(255, 253, 249, 0.7);
+  --orb-b: rgba(118, 161, 178, 0.42);
   --button-ink: #fff8f2;
   --accent: #4f6f91;
   --accent-dark: #304d70;
@@ -49,6 +51,8 @@
   --field-focus: rgba(21, 36, 57, 0.92);
   --panel: rgba(12, 24, 39, 0.7);
   --panel-border: rgba(202, 220, 244, 0.16);
+  --orb-a: rgba(78, 126, 174, 0.24);
+  --orb-b: rgba(47, 135, 139, 0.22);
   --button-ink: #f4f8ff;
 }
 
@@ -97,7 +101,7 @@ a {
   border-radius: 999px;
   filter: blur(2px);
   pointer-events: none;
-  opacity: 0.54;
+  opacity: 0.42;
 }
 .orb-a {
   width: 390px;
@@ -106,7 +110,7 @@ a {
   right: 13%;
   background: radial-gradient(
     circle at 36% 35%,
-    var(--glass-highlight),
+    var(--orb-a),
     rgba(132, 161, 198, 0.22) 62%,
     transparent 70%
   );
@@ -116,7 +120,7 @@ a {
   height: 310px;
   bottom: 14%;
   left: -120px;
-  background: radial-gradient(circle, rgba(118, 161, 178, 0.42), transparent 68%);
+  background: radial-gradient(circle, var(--orb-b), transparent 68%);
 }
 .topbar,
 .hero,
@@ -663,6 +667,15 @@ small {
   display: grid;
   gap: 16px;
 }
+.report-field-grid,
+.report-route-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.report-route-grid {
+  grid-template-columns: 1fr 1fr;
+}
 .report-summary {
   display: grid;
   gap: 7px;
@@ -759,6 +772,10 @@ small {
   background: var(--accent);
   padding: 8px 13px;
   border-radius: 999px;
+}
+.topbar-links .donate-button {
+  padding: 8px 12px;
+  color: var(--button-ink);
 }
 .site-footer p.footer-fineprint {
   grid-column: 1 / -1;
@@ -860,6 +877,10 @@ small {
     grid-template-columns: 1fr;
   }
   .report-date-grid {
+    grid-template-columns: 1fr;
+  }
+  .report-field-grid,
+  .report-route-grid {
     grid-template-columns: 1fr;
   }
   .footer-links {

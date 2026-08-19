@@ -61,9 +61,8 @@ describe('transit estimates', () => {
   })
 
   it('blends validated community outcomes after three matching deliveries', () => {
-    const reports = [10, 11, 12].map((issueNumber) => ({
-      issueNumber,
-      issueUrl: `https://github.com/castdrian/thor-when/issues/${issueNumber}`,
+    const reports = [10, 11, 12].map((id) => ({
+      id: String(id),
       submittedAt: '2026-08-19T00:00:00.000Z',
       color: 'Black',
       tier: 'max' as const,

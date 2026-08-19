@@ -11,8 +11,7 @@ export interface ThorVariant {
 }
 
 export interface CommunityReport {
-  issueNumber: number
-  issueUrl: string
+  id: string
   submittedAt: string
   color: string
   tier: ThorTier

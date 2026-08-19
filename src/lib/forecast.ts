@@ -107,7 +107,7 @@ function reportToRecord(report: CommunityReport): ShipmentRecord {
     storageVariant: report.storageVariant,
     lowerPrefix: report.orderPrefix,
     upperPrefix: report.orderPrefix,
-    sourceLabel: `community report ${report.issueNumber}`
+    sourceLabel: `community report ${report.id}`
   }
 }
 
@@ -260,8 +260,8 @@ function dispatchEstimate(
       observations: points.length,
       model: ambiguousBoundary ? 'published batch boundary' : 'published AYN batch',
       explanation: ambiguousBoundary
-        ? `AYN lists ${orderPrefix}xx across adjacent batch dates, so the source boundary is treated as a range.`
-        : `AYN explicitly lists ${orderPrefix}xx in a shipment batch on ${lastExactDate}.`
+        ? `AYN lists order bucket ${orderPrefix} across adjacent batch dates, so the source boundary is treated as a range.`
+        : `AYN explicitly lists order bucket ${orderPrefix} in a shipment batch on ${lastExactDate}.`
     }
   }
   if (points.length && (crossing || orderPrefix <= lastPoint(points).prefix)) {
@@ -275,7 +275,7 @@ function dispatchEstimate(
       frontierPrefix: latest.prefix,
       observations: points.length,
       model: 'frontier crossing',
-      explanation: `Your ${orderPrefix}xx bucket is behind the latest ${latest.prefix}xx frontier, but AYN does not list that exact bucket.`
+      explanation: `Your order bucket ${orderPrefix} is behind the latest ${latest.prefix} frontier, but AYN does not list that exact bucket.`
     }
   }
   const pooledRecords = fallbackRecords(configuration, records, communityReports)
@@ -306,7 +306,7 @@ function dispatchEstimate(
       frontierPrefix: latest.prefix,
       observations: 0,
       model: 'pooled frontier',
-      explanation: `AYN has not published a ${displayConfiguration(configuration)} row yet, but similar queues have passed ${orderPrefix}xx.${communityNote}`
+      explanation: `AYN has not published a ${displayConfiguration(configuration)} row yet, but similar queues have passed order bucket ${orderPrefix}.${communityNote}`
     }
   }
   const selected = selectModel(forecastPoints)
@@ -348,7 +348,7 @@ export function estimateShipment(input: EstimateInput, source: ShipmentDataset):
     return {
       ok: false,
       code: 'invalid-prefix',
-      message: 'enter the four digits before the xx in your order number.'
+      message: 'enter the first four digits of your order number.'
     }
   }
   if (!isSupportedCountry(input.country) || !isSupportedShippingMethod(input.shippingMethod)) {

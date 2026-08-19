@@ -4,13 +4,29 @@ thor when? turns AYN’s public shipment dashboard into an unofficial dispatch a
 
 ## what it does
 
-Choose your Thor color, tier, storage, destination, and shipping method. Every current AYN variant is available in the guided form: Lite 8+128GB, Base 8+128GB, Pro 12+256GB, Max 16+512GB, and Max 16+1TB. Enter the four digits before the `xx` in your order number. The app reports the latest configuration-specific shipment frontier, a likely dispatch date and window, and a separate arrival window.
+Choose your Thor color, tier, storage, destination, and shipping method. Every current AYN variant is available in the guided form: Lite 8+128GB, Base 8+128GB, Pro 12+256GB, Max 16+512GB, and Max 16+1TB. Enter the first four digits of your order number. The app treats those digits as a 100-order bucket, then reports the latest configuration-specific shipment frontier, a likely dispatch date and window, and a separate arrival window.
 
-The interface starts with your operating system’s light or dark preference. The theme button lets you save an explicit choice for future visits.
-
-AYN publishes ranges rather than individual order promises. The estimator uses observed frontier movement, robust trend and batch-pace candidates, rolling backtests, and residual-based uncertainty windows. It reports uncertainty explicitly and never represents a forecast as an AYN guarantee.
+The form defaults to South Korea and Standard / 4PX, while still letting a visitor choose any supported route. The interface starts with the operating system’s light or dark preference. The theme button saves an explicit choice for future visits.
 
 AYN’s [Thor product page](https://www.ayntec.com/products/ayn-thor) defines the current variants and AYN’s [shipping policy](https://www.ayntec.com/policies/shipping-policy) lists DHL at about 3–7 working days after dispatch, Standard / 4PX at about 15–20 calendar days, and Standard / 4PX to Brazil at about 15–30 calendar days. The app converts those sourced ranges into weekday-aware arrival bounds. Customs, holidays, remote-area delays, and carrier disruptions are outside the model.
+
+## how the estimate works
+
+The numbers are deliberately turned into a few plain-language steps:
+
+1. A refresh reads AYN’s dated ranges and records the highest order bucket reached for each color and model on each date. That creates a moving frontier rather than pretending every order has its own published date.
+2. If your bucket is inside a published range, the app shows that observed batch. If it is below the latest frontier but absent from a row, it says it probably already passed. If it is ahead, the app estimates when the frontier may cross it.
+3. For a future crossing, two simple pace guesses are tested against older dashboard dates: a recent median batch pace and a robust trend that is less affected by one unusual batch. The guess with the smaller average miss in those historical tests wins. If a color queue is too sparse, the app pools the same tier and storage history and lowers confidence.
+4. The date is wrapped in a window. The window is made from the historical misses of those backtests, widened when there is little history or a long way to extrapolate. It never starts before the latest source observation.
+5. Transit is added separately using AYN’s carrier policy. Real delivery reports only adjust this transit part after at least three matching, date-validated outcomes, so one anecdote cannot swing the result. Each accepted report is also added to the current browser session immediately.
+
+In other words, the algorithm is a measured “how fast has this queue been moving lately?” calculation with a safety margin based on how wrong similar past guesses were. It is not a promise and it does not need a visitor’s address or tracking number.
+
+## live reports and storage
+
+The app is hosted as a Cloudflare Worker with Workers Static Assets. The Worker serves the fast Svelte shell and handles `/api/reports` on the same origin. Reports are validated at the edge, then stored in a private Cloudflare D1 SQLite database containing only the selected model, four-digit bucket, country, carrier, dates, and an anonymous generated id. No name, email, address, tracking number, IP address, or analytics identifier is stored.
+
+After a successful submission the API returns the accepted report, the browser merges it into its in-memory dataset, and the estimate recalculates without a reload. A six-hour GitHub Actions refresh fetches the AYN dashboard, runs all checks, applies D1 migrations, and deploys the Worker. If the source fetch fails, the workflow stops before deployment so the previous live Worker remains in place.
 
 ## local development
 
@@ -20,6 +36,13 @@ bun run dev
 ```
 
 Bun is the supported package manager and runtime. Node 22 is pinned in `.nvmrc` only for ecosystem tooling that requires Node-compatible APIs.
+
+To exercise the Worker and local D1 binding:
+
+```text
+bun run db:migrate -- --local
+bun run dev:worker
+```
 
 Useful checks:
 
@@ -35,19 +58,15 @@ bun run build
 
 ## deployment
 
-The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) through GitHub Pages and `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, shipping-report issue events, and a six-hour schedule. Each refresh fetches AYN’s dashboard and validated community reports, builds the static app, and deploys the Pages artifact. A source failure leaves the previous deployment untouched.
+The repository deploys to [thor-when.dylib.dev](https://thor-when.dylib.dev/) through `.github/workflows/deploy.yml` on pushes to `main`, manual dispatches, and a six-hour schedule. The workflow uses Bun, fetches fresh AYN data, runs formatting, Biome, strict type checks, unit tests, Playwright, and a production build, then provisions the `thor-when` D1 database if needed, applies migrations, and deploys the Worker.
 
-GitHub Pages must use GitHub Actions as its publishing source. Project Pages builds use `/thor-when/` as the asset base; a custom domain can use `/` by changing the Vite base configuration and setting `VITE_SITE_URL` to the public origin.
+Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository Actions secrets. The token needs permission to deploy Workers, manage D1, and attach the `thor-when.dylib.dev` custom domain. Cloudflare must have an active zone for `dylib.dev`; the custom-domain configuration creates the Worker DNS record and certificate.
 
-The static HTML includes lowercase `thor when?` Open Graph and Twitter metadata plus a 1200×630 PNG preview card for link embeds.
-
-## methodology
-
-The estimator turns dated AYN ranges into a monotonic configuration frontier. Exact ranges are reported as observed, gaps behind the frontier are inferred as probably shipped, and future buckets use the better recent batch-pace or Theil–Sen trend after rolling-origin error checks. A pooled tier and storage fallback is used when a color queue has too little progressing history, so a valid variant can still receive a forecast before its own label appears on the dashboard. Transit is added from AYN’s published carrier windows.
+The Worker’s static assets use `/` as their base path. The Vite configuration still supports a GitHub Pages project path when `VITE_BASE_PATH` is set, but the production workflow uses the Worker origin. The HTML includes lowercase `thor when?` Open Graph and Twitter metadata plus a dark 1200×630 PNG preview card for link embeds.
 
 ## privacy
 
-thor when? stores no analytics, cookies, addresses, or tracking numbers. The four-digit bucket stays in the shareable URL only when you choose to copy or bookmark it. Optional shipping reports open as public GitHub issues and include only the selected variant, bucket, destination country, carrier, and dispatch or arrival dates. Accepted reports are validated, stripped of author identity, and used as aggregate timing evidence; never submit personal information.
+thor when? stores no analytics, cookies, addresses, tracking numbers, or personal identifiers. The four-digit bucket stays in the shareable URL only when you choose to copy or bookmark it. Shipping reports contain only the selected model, bucket, destination country, carrier, and dispatch or arrival dates. Accepted reports are validated and used as aggregate timing evidence; never submit personal information.
 
 ## disclaimer
 
@@ -62,7 +81,8 @@ If thor when? helped you, support the project through [GitHub Sponsors](https://
 - [AYN shipment dashboard](https://www.ayntec.com/pages/shipment-dashboard)
 - [AYN Thor product variants](https://www.ayntec.com/products/ayn-thor)
 - [AYN shipping policy](https://www.ayntec.com/policies/shipping-policy)
-- [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+- [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Cloudflare D1](https://developers.cloudflare.com/d1/)
 
 ## license
 
