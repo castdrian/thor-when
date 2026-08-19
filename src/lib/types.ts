@@ -1,7 +1,40 @@
-export type ThorTier = 'lite' | 'base' | 'pro' | 'max'
-export type StorageVariant = 'standard' | '512'
+export type ThorTier = 'max' | 'pro' | 'base' | 'lite'
+export type StorageVariant = '128gb' | '256gb' | '512gb' | '1tb'
 export type ShippingMethod = 'dhl' | 'standard'
 export type Confidence = 'high' | 'medium' | 'low'
+
+export interface ThorVariant {
+  tier: ThorTier
+  storageVariant: StorageVariant
+  memoryGb: 8 | 12 | 16
+  label: string
+}
+
+export interface CommunityReport {
+  issueNumber: number
+  issueUrl: string
+  submittedAt: string
+  color: string
+  tier: ThorTier
+  storageVariant: StorageVariant
+  orderPrefix: number
+  country: string
+  shippingMethod: ShippingMethod
+  dispatchedOn: string
+  deliveredOn?: string
+}
+
+export const THOR_COLORS = ['Black', 'White', 'Rainbow', 'Clear Purple'] as const
+
+export const THOR_VARIANTS: readonly ThorVariant[] = [
+  { tier: 'max', storageVariant: '1tb', memoryGb: 16, label: 'Max · 16+1TB' },
+  { tier: 'max', storageVariant: '512gb', memoryGb: 16, label: 'Max · 16+512GB' },
+  { tier: 'pro', storageVariant: '256gb', memoryGb: 12, label: 'Pro · 12+256GB' },
+  { tier: 'base', storageVariant: '128gb', memoryGb: 8, label: 'Base · 8+128GB' },
+  { tier: 'lite', storageVariant: '128gb', memoryGb: 8, label: 'Lite · 8+128GB' }
+]
+
+export const THOR_TIER_ORDER: readonly ThorTier[] = ['max', 'pro', 'base', 'lite']
 
 export interface ShipmentRecord {
   date: string
@@ -20,12 +53,13 @@ export interface ThorConfiguration {
 }
 
 export interface ShipmentDataset {
-  schemaVersion: 1
+  schemaVersion: 2
   fetchedAt: string
   sourceUrl: string
   sourceLatestDate: string
   records: ShipmentRecord[]
   configurations: ThorConfiguration[]
+  communityReports?: CommunityReport[]
 }
 
 export interface EstimateInput extends ThorConfiguration {
@@ -58,6 +92,8 @@ export interface ArrivalEstimate {
   transitDays: { min: number; max: number }
   methodLabel: string
   explanation: string
+  sourceUrl: string
+  sampleSize: number
 }
 
 export interface EstimateSuccess {

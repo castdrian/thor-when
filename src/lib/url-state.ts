@@ -12,8 +12,8 @@ const keys = [
   'shippingMethod'
 ] as const
 
-const tiers = new Set<ThorTier>(['lite', 'base', 'pro', 'max'])
-const storageVariants = new Set<StorageVariant>(['standard', '512'])
+const tiers = new Set<ThorTier>(['max', 'pro', 'base', 'lite'])
+const storageVariants = new Set<StorageVariant>(['128gb', '256gb', '512gb', '1tb'])
 const shippingMethods = new Set<ShippingMethod>(['dhl', 'standard'])
 const countries = new Set<string>(SUPPORTED_COUNTRIES)
 

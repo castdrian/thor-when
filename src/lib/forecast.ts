@@ -1,7 +1,8 @@
 import { addWorkingDaysToWindow, isSupportedCountry, isSupportedShippingMethod } from './transit'
-import { configurationKey, hasConfiguration } from './data'
+import { configurationKey, displayConfiguration, hasConfiguration } from './data'
 import type {
   Confidence,
+  CommunityReport,
   DateWindow,
   DispatchEstimate,
   EstimateInput,
@@ -66,10 +67,55 @@ function matchingRecords(
     .sort((left, right) => left.date.localeCompare(right.date))
 }
 
+function fallbackRecords(
+  configuration: ThorConfiguration,
+  records: ShipmentRecord[],
+  reports: CommunityReport[]
+): ShipmentRecord[] {
+  const sameVariant = records.filter(
+    (record) =>
+      record.tier === configuration.tier && record.storageVariant === configuration.storageVariant
+  )
+  const pooledReports = reports
+    .filter(
+      (report) =>
+        report.tier === configuration.tier && report.storageVariant === configuration.storageVariant
+    )
+    .map(reportToRecord)
+  if (sameVariant.length || pooledReports.length)
+    return [...sameVariant, ...pooledReports].sort((left, right) =>
+      left.date.localeCompare(right.date)
+    )
+  const sameTier = records.filter((record) => record.tier === configuration.tier)
+  const sameTierReports = reports
+    .filter((report) => report.tier === configuration.tier)
+    .map(reportToRecord)
+  if (sameTier.length || sameTierReports.length)
+    return [...sameTier, ...sameTierReports].sort((left, right) =>
+      left.date.localeCompare(right.date)
+    )
+  return [...records, ...reports.map(reportToRecord)].sort((left, right) =>
+    left.date.localeCompare(right.date)
+  )
+}
+
+function reportToRecord(report: CommunityReport): ShipmentRecord {
+  return {
+    date: report.dispatchedOn,
+    color: report.color,
+    tier: report.tier,
+    storageVariant: report.storageVariant,
+    lowerPrefix: report.orderPrefix,
+    upperPrefix: report.orderPrefix,
+    sourceLabel: `community report ${report.issueNumber}`
+  }
+}
+
 function buildFrontier(records: ShipmentRecord[]): FrontierPoint[] {
-  const firstDay = records.length ? toDay(records[0].date) : 0
+  const orderedRecords = [...records].sort((left, right) => left.date.localeCompare(right.date))
+  const firstDay = orderedRecords.length ? toDay(orderedRecords[0].date) : 0
   const byDate = new Map<string, number>()
-  for (const record of records) {
+  for (const record of orderedRecords) {
     byDate.set(record.date, Math.max(byDate.get(record.date) ?? 0, record.upperPrefix))
   }
   let runningPrefix = 0
@@ -178,28 +224,21 @@ function dispatchEstimate(
   configuration: ThorConfiguration,
   orderPrefix: number,
   records: ShipmentRecord[],
-  sourceLatestDate: string
+  sourceLatestDate: string,
+  communityReports: CommunityReport[]
 ): DispatchEstimate {
   const matched = matchingRecords(configuration, records)
-  if (!matched.length) {
-    return {
-      status: 'insufficient',
-      likelyDate: '',
-      window: { start: '', end: '' },
-      confidence: 'low',
-      frontierPrefix: 0,
-      observations: 0,
-      model: 'no configuration history',
-      explanation: 'There is no matching shipment history for this configuration yet.'
-    }
-  }
+  const matchedCommunityReports = communityReports.filter(
+    (report) => configurationKey(report) === configurationKey(configuration)
+  )
+  const calibrationRecords = [...matched, ...matchedCommunityReports.map(reportToRecord)]
   const exactMatches = matched.filter(
     (record) => orderPrefix >= record.lowerPrefix && orderPrefix <= record.upperPrefix
   )
   const points = buildFrontier(matched)
-  const latest = lastPoint(points)
   const crossing = matched.find((record) => record.upperPrefix >= orderPrefix)
   if (exactMatches.length) {
+    const latest = lastPoint(points)
     const exactDates = [...new Set(exactMatches.map((record) => record.date))].sort()
     const firstExactDate = exactDates[0]
     const lastExactDate = exactDates.at(-1)
@@ -218,7 +257,8 @@ function dispatchEstimate(
         : `AYN explicitly lists ${orderPrefix}xx in a shipment batch on ${lastExactDate}.`
     }
   }
-  if (crossing || orderPrefix <= latest.prefix) {
+  if (points.length && (crossing || orderPrefix <= lastPoint(points).prefix)) {
+    const latest = lastPoint(points)
     const inferredDate = crossing?.date ?? latest.date
     return {
       status: 'inferred',
@@ -231,14 +271,37 @@ function dispatchEstimate(
       explanation: `Your ${orderPrefix}xx bucket is behind the latest ${latest.prefix}xx frontier, but AYN does not list that exact bucket.`
     }
   }
-  const pooledRecords = records.filter(
-    (record) =>
-      record.tier === configuration.tier && record.storageVariant === configuration.storageVariant
-  )
+  const pooledRecords = fallbackRecords(configuration, records, communityReports)
   const pooledPoints = buildFrontier(pooledRecords)
-  const configurationProgress = positiveRates(points).length
-  const usedFallback = configurationProgress < 3
-  const forecastPoints = usedFallback ? pooledPoints : points
+  const calibrationPoints = buildFrontier(calibrationRecords)
+  const configurationProgress = positiveRates(calibrationPoints).length
+  const usedFallback = !points.length || configurationProgress < 3
+  const forecastPoints = usedFallback ? pooledPoints : calibrationPoints
+  if (!forecastPoints.length) {
+    return {
+      status: 'insufficient',
+      likelyDate: '',
+      window: { start: '', end: '' },
+      confidence: 'low',
+      frontierPrefix: 0,
+      observations: points.length,
+      model: 'no usable history',
+      explanation: 'There is not enough shipment history to estimate this queue yet.'
+    }
+  }
+  const latest = lastPoint(forecastPoints)
+  if (!points.length && orderPrefix <= latest.prefix) {
+    return {
+      status: 'insufficient',
+      likelyDate: latest.date,
+      window: { start: latest.date, end: latest.date },
+      confidence: 'low',
+      frontierPrefix: latest.prefix,
+      observations: 0,
+      model: 'pooled frontier',
+      explanation: `AYN has not published a ${displayConfiguration(configuration)} row yet, but similar queues have passed ${orderPrefix}xx.`
+    }
+  }
   const selected = selectModel(forecastPoints)
   const relativeDay = selected.model.predict(forecastPoints, orderPrefix)
   const absoluteDay = toDay(forecastPoints[0].date) + relativeDay
@@ -259,7 +322,9 @@ function dispatchEstimate(
     observations: points.length,
     model: usedFallback ? `pooled ${selected.model.name}` : selected.model.name,
     explanation: usedFallback
-      ? 'This configuration has limited history, so the estimate uses the combined pace of similar Thor queues.'
+      ? points.length
+        ? 'This configuration has limited history, so the estimate uses the combined pace of similar Thor queues.'
+        : `AYN has not published ${displayConfiguration(configuration)} yet, so the estimate uses the combined pace of similar Thor queues.`
       : `The estimate follows ${selected.model.name} from the observed shipment frontier.`
   }
 }
@@ -297,14 +362,25 @@ export function estimateShipment(input: EstimateInput, source: ShipmentDataset):
     return {
       ok: false,
       code: 'unknown-configuration',
-      message: 'that Thor configuration is not in the latest shipment data.'
+      message: 'choose one of AYN’s current Thor variants.'
     }
   }
-  const dispatch = dispatchEstimate(input, parsedPrefix, source.records, source.sourceLatestDate)
+  const dispatch = dispatchEstimate(
+    input,
+    parsedPrefix,
+    source.records,
+    source.sourceLatestDate,
+    source.communityReports ?? []
+  )
   if (dispatch.status === 'insufficient' && !dispatch.likelyDate) {
     return { ok: false, code: 'no-data', message: dispatch.explanation }
   }
-  const arrival = addWorkingDaysToWindow(dispatch.window, input.country, input.shippingMethod)
+  const arrival = addWorkingDaysToWindow(
+    dispatch.window,
+    input.country,
+    input.shippingMethod,
+    source.communityReports ?? []
+  )
   return {
     ok: true,
     input: { ...input, orderPrefix: parsedPrefix },

@@ -41,6 +41,13 @@ describe('transit estimates', () => {
         'standard'
       ).window
     ).toEqual({ start: '2026-08-29', end: '2026-09-03' })
+    expect(
+      addWorkingDaysToWindow(
+        { start: '2026-08-14', end: '2026-08-14' },
+        'United States',
+        'standard'
+      ).sourceUrl
+    ).toBe('https://www.ayntec.com/policies/shipping-policy')
   })
 
   it('adds transit to both ends of a dispatch window', () => {
@@ -51,5 +58,29 @@ describe('transit estimates', () => {
       start: '2026-08-20',
       end: '2026-08-27'
     })
+  })
+
+  it('blends validated community outcomes after three matching deliveries', () => {
+    const reports = [10, 11, 12].map((issueNumber) => ({
+      issueNumber,
+      issueUrl: `https://github.com/castdrian/thor-when/issues/${issueNumber}`,
+      submittedAt: '2026-08-19T00:00:00.000Z',
+      color: 'Black',
+      tier: 'max' as const,
+      storageVariant: '1tb' as const,
+      orderPrefix: 2500,
+      country: 'United States',
+      shippingMethod: 'dhl' as const,
+      dispatchedOn: '2026-08-01',
+      deliveredOn: '2026-08-06'
+    }))
+    const result = addWorkingDaysToWindow(
+      { start: '2026-08-20', end: '2026-08-20' },
+      'United States',
+      'dhl',
+      reports
+    )
+    expect(result.sampleSize).toBe(3)
+    expect(result.explanation).toMatch(/community delivery reports/)
   })
 })

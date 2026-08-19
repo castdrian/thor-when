@@ -24,6 +24,17 @@ describe('thor when app', () => {
       'href',
       'https://github.com/castdrian/thor-when#methodology'
     )
+    expect(screen.getByRole('option', { name: '1TB' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Max' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open github report/i })).toBeDisabled()
+  })
+
+  it('offers a dark mode toggle', async () => {
+    render(App)
+    const toggle = screen.getByRole('button', { name: /switch to dark mode/i })
+    await fireEvent.click(toggle)
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('shows a result after entering a valid signal', async () => {

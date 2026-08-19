@@ -6,17 +6,32 @@ describe('dashboard parser', () => {
     expect(parseConfiguration('White Max（512）')).toEqual({
       color: 'White',
       tier: 'max',
-      storageVariant: '512'
+      storageVariant: '512gb'
     })
     expect(parseConfiguration('White Max')).toEqual({
       color: 'White',
       tier: 'max',
-      storageVariant: 'standard'
+      storageVariant: '1tb'
     })
     expect(parseConfiguration('White Max 512')).toEqual({
       color: 'White',
       tier: 'max',
-      storageVariant: '512'
+      storageVariant: '512gb'
+    })
+    expect(parseConfiguration('White Max 1TB')).toEqual({
+      color: 'White',
+      tier: 'max',
+      storageVariant: '1tb'
+    })
+    expect(parseConfiguration('Black Pro')).toEqual({
+      color: 'Black',
+      tier: 'pro',
+      storageVariant: '256gb'
+    })
+    expect(parseConfiguration('Black Lite')).toEqual({
+      color: 'Black',
+      tier: 'lite',
+      storageVariant: '128gb'
     })
   })
 
@@ -25,12 +40,13 @@ describe('dashboard parser', () => {
     const data = parseDashboardHtml(html, '2026-08-19T12:00:00.000Z')
     expect(data.sourceLatestDate).toBe('2026-08-19')
     expect(data.records).toHaveLength(10)
-    expect(data.records[0].storageVariant).toBe('512')
+    expect(data.records[0].storageVariant).toBe('512gb')
     expect(data.configurations).toContainEqual({
       color: 'Black',
       tier: 'pro',
-      storageVariant: 'standard'
+      storageVariant: '256gb'
     })
+    expect(data.configurations).toHaveLength(20)
   })
 
   it('fails when the source has no recognized rows', () => {

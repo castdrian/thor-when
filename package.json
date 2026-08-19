@@ -29,7 +29,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "fetch-data": "bunx tsx scripts/fetch-dashboard.ts"
+    "fetch-data": "bunx tsx scripts/fetch-dashboard.ts",
+    "fetch-reports": "bunx tsx scripts/fetch-community-reports.ts"
   },
   "dependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.0",

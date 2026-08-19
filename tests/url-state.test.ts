@@ -6,7 +6,7 @@ describe('shareable URL state', () => {
     const input = {
       color: 'White',
       tier: 'pro' as const,
-      storageVariant: '512' as const,
+      storageVariant: '512gb' as const,
       orderPrefix: '2500',
       country: 'Brazil',
       shippingMethod: 'standard' as const
@@ -17,7 +17,7 @@ describe('shareable URL state', () => {
   it('ignores crafted values outside the guided inputs', () => {
     expect(
       readInputFromUrl(
-        '?tier=unknown&storageVariant=1tb&orderPrefix=250&country=Unknown&shippingMethod=express'
+        '?tier=unknown&storageVariant=standard&orderPrefix=250&country=Unknown&shippingMethod=express'
       )
     ).toEqual({})
   })

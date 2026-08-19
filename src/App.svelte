@@ -6,6 +6,7 @@
     displayStorage,
     displayTier,
     getColors,
+    getConfigurations,
     getStorageVariants,
     getTiers,
     hasConfiguration,
@@ -27,10 +28,10 @@
     ThorTier
   } from './lib/types'
 
-  const defaultConfiguration = dataset.configurations[0] ?? {
+  const defaultConfiguration = getConfigurations(dataset)[0] ?? {
     color: '',
-    tier: 'lite' as const,
-    storageVariant: 'standard' as const
+    tier: 'max' as const,
+    storageVariant: '1tb' as const
   }
   const urlInput = typeof window === 'undefined' ? {} : readInputFromUrl(window.location.search)
   let form: EstimateInput = {
@@ -44,11 +45,21 @@
   }
   let result: EstimateResult | null = null
   let hasSubmitted = false
+  let theme: 'light' | 'dark' =
+    typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark'
+      ? 'dark'
+      : 'light'
+  let reportDispatchDate = ''
+  let reportArrivalDate = ''
+  let reportConsent = false
+  let reportNotice = ''
   const baseUrl = import.meta.env.BASE_URL
+  const reportIssueUrl = 'https://github.com/castdrian/thor-when/issues/new'
+  const today = new Date().toISOString().slice(0, 10)
 
   const colors = getColors(dataset)
   const tiers = getTiers(dataset)
-  const storageVariants = getStorageVariants(dataset)
+  let storageVariants = getStorageVariants(form.tier, dataset)
 
   $: selectedConfigurationIsValid = hasConfiguration(form, dataset)
   $: configurationLabel = selectedConfigurationIsValid
@@ -59,7 +70,39 @@
   $: datasetAvailable = dataset.records.length > 0 && dataset.configurations.length > 0
   $: datasetIsStale = isDatasetStale(dataset)
 
+  function handleTierChange() {
+    storageVariants = getStorageVariants(form.tier, dataset)
+    if (!storageVariants.includes(form.storageVariant)) {
+      form = { ...form, storageVariant: storageVariants[0] ?? form.storageVariant }
+    }
+  }
+
+  function applyTheme(nextTheme: 'light' | 'dark', persist = false) {
+    theme = nextTheme
+    if (typeof document !== 'undefined') document.documentElement.dataset.theme = nextTheme
+    if (persist && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('thor-when-theme', nextTheme)
+      } catch {
+        return
+      }
+    }
+  }
+
+  function toggleTheme() {
+    applyTheme(theme === 'dark' ? 'light' : 'dark', true)
+  }
+
   onMount(() => {
+    let savedTheme = ''
+    try {
+      savedTheme = window.localStorage.getItem('thor-when-theme') ?? ''
+    } catch {
+      savedTheme = ''
+    }
+    const systemTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    applyTheme(savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : systemTheme)
+    handleTierChange()
     if (prefixIsValid && selectedConfigurationIsValid) {
       result = estimateShipment(form, dataset)
       hasSubmitted = true
@@ -71,6 +114,33 @@
     const query = writeInputToUrl(form)
     if (typeof window !== 'undefined') window.history.replaceState({}, '', query)
     result = estimateShipment(form, dataset)
+  }
+
+  function openShippingReport() {
+    if (!prefixIsValid || !selectedConfigurationIsValid || !reportDispatchDate || !reportConsent) {
+      reportNotice = 'choose your variant, enter a four-digit bucket, add a dispatch date, and confirm the privacy note.'
+      return
+    }
+    const body = [
+      `Thor color: ${form.color}`,
+      `Thor tier: ${form.tier}`,
+      `Thor storage: ${form.storageVariant}`,
+      `Order bucket: ${form.orderPrefix}`,
+      `Destination country: ${form.country}`,
+      `Shipping method: ${form.shippingMethod}`,
+      `Dispatch date: ${reportDispatchDate}`,
+      `Arrival date: ${reportArrivalDate || 'not yet delivered'}`,
+      'Consent: yes',
+      '',
+      'I confirm this is an actual shipping outcome and contains no personal information.'
+    ].join('\n')
+    const params = new URLSearchParams({
+      title: `shipping report ${form.orderPrefix}xx`,
+      labels: 'shipping-report',
+      body
+    })
+    window.open(`${reportIssueUrl}?${params.toString()}`, '_blank', 'noopener,noreferrer')
+    reportNotice = 'GitHub opened a public report draft. Review it, remove anything personal, and submit it there.'
   }
 
   function confidenceLabel(confidence: Confidence): string {
@@ -97,6 +167,7 @@
 </script>
 
 <svelte:head>
+  <meta name="theme-color" content={theme === 'dark' ? '#0b1220' : '#e5e2dc'} />
   <meta property="og:title" content="thor when?" />
   <meta property="og:description" content="see when your ayn thor will probably ship and arrive." />
   <meta name="twitter:title" content="thor when?" />
@@ -116,7 +187,8 @@
       <span class="wordmark-dot"></span>
       <span>thor when?</span>
     </a>
-    <div class="topbar-links">
+    <div class="topbar-actions">
+      <div class="topbar-links">
       <a
         href="https://www.ayntec.com/pages/shipment-dashboard"
         target="_blank"
@@ -129,6 +201,17 @@
         rel="noopener noreferrer"
         >support the project <span aria-hidden="true">↗</span></a
       >
+      </div>
+      <button
+        class="theme-toggle"
+        type="button"
+        aria-pressed={theme === 'dark'}
+        aria-label={theme === 'dark' ? 'switch to light mode' : 'switch to dark mode'}
+        on:click={toggleTheme}
+      >
+        <span aria-hidden="true">{theme === 'dark' ? '☼' : '◐'}</span>
+        <span>{theme === 'dark' ? 'light' : 'dark'}</span>
+      </button>
     </div>
   </nav>
 
@@ -174,7 +257,7 @@
         </label>
         <label>
           <span>tier</span>
-          <select bind:value={form.tier} aria-label="Thor tier">
+          <select bind:value={form.tier} aria-label="Thor tier" on:change={handleTierChange}>
             {#each tiers as tier (tier)}
               <option value={tier}>{displayTier(tier)}</option>
             {/each}
@@ -198,7 +281,7 @@
         {#if selectedConfigurationIsValid}
           {configurationLabel}
         {:else}
-          this exact color, tier, and storage combination is not in the latest dashboard
+          choose one of the real Thor variants
         {/if}
       </div>
 
@@ -254,7 +337,7 @@
       {#if hasSubmitted && !prefixIsValid}
         <p class="form-error" role="alert">please enter exactly four digits.</p>
       {:else if hasSubmitted && !selectedConfigurationIsValid}
-        <p class="form-error" role="alert">choose a configuration shown in the latest dashboard.</p>
+        <p class="form-error" role="alert">choose one of AYN’s Thor variants.</p>
       {/if}
     </form>
 
@@ -297,7 +380,13 @@
 
           <div class="result-detail-grid">
             <div><span>frontier read</span><strong>{result.dispatch.frontierPrefix}xx</strong></div>
-            <div><span>signal</span><strong>{result.dispatch.observations} batches</strong></div>
+            <div>
+              <span>signal</span><strong
+                >{result.dispatch.observations
+                  ? `${result.dispatch.observations} batches`
+                  : 'pooled history'}</strong
+              ></div
+            >
             <div><span>model</span><strong>{result.dispatch.model}</strong></div>
           </div>
           <p class="result-explanation">
@@ -317,6 +406,13 @@
               target="_blank"
               rel="noopener noreferrer"
               >verify at AYN <span aria-hidden="true">↗</span></a
+            >
+            <a
+              class="quiet-button"
+              href={result.arrival.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              >shipping time source <span aria-hidden="true">↗</span></a
             >
           </div>
         </section>
@@ -350,10 +446,63 @@
         <span class="method-mark">i</span>
         <p>
           <strong>how we read it.</strong> AYN publishes ranges, not individual order promises. thor when?
-          models the moving frontier and shows a range around it. arrival adds AYN’s published carrier
-          transit window; customs and holidays can still move the real date.
+          models the moving frontier and shows a range around it. arrival uses AYN’s published carrier
+          transit windows; customs and holidays can still move the real date.
         </p>
       </div>
+    </div>
+  </section>
+
+  <section class="report-card glass-card" aria-labelledby="report-title">
+    <div class="card-kicker"><span>04</span> improve the next read</div>
+    <div class="report-layout">
+      <div>
+        <h2 id="report-title">when yours ships, tell the next person.</h2>
+        <p>
+          share the real dispatch or arrival milestone for this selected bucket. Reports are
+          public GitHub issues, checked by the refresh job, and used only as anonymous timing
+          evidence.
+        </p>
+        <p class="report-safety">
+          never include a name, address, email, tracking number, or order link.
+        </p>
+      </div>
+      <form class="report-form" on:submit|preventDefault={openShippingReport}>
+        <div class="report-summary">
+          <span>reporting</span>
+          <strong>{configurationLabel} · {String(form.orderPrefix || '----')}xx</strong>
+        </div>
+        <div class="report-date-grid">
+          <label>
+            <span>actual dispatch date</span>
+            <input bind:value={reportDispatchDate} type="date" max={today} required />
+          </label>
+          <label>
+            <span>actual arrival date</span>
+            <input
+              bind:value={reportArrivalDate}
+              type="date"
+              min={reportDispatchDate || undefined}
+              max={today}
+            />
+          </label>
+        </div>
+        <label class="consent-row">
+          <input bind:checked={reportConsent} type="checkbox" />
+          <span>I’m sharing an actual outcome and understand the report is public.</span>
+        </label>
+        <button
+          class="primary-button report-button"
+          type="submit"
+          disabled={!prefixIsValid || !selectedConfigurationIsValid || !reportDispatchDate || !reportConsent}
+        >
+          <span>open GitHub report</span>
+          <span class="button-arrow" aria-hidden="true">↗</span>
+        </button>
+        {#if reportNotice}
+          <p class="report-notice" role="status">{reportNotice}</p>
+        {/if}
+      </form>
     </div>
   </section>
 
@@ -377,6 +526,16 @@
         href="https://www.ayntec.com/pages/shipment-dashboard"
         target="_blank"
         rel="noopener noreferrer">AYN dashboard <span aria-hidden="true">↗</span></a
+      >
+      <a
+        href="https://www.ayntec.com/products/ayn-thor"
+        target="_blank"
+        rel="noopener noreferrer">Thor variants <span aria-hidden="true">↗</span></a
+      >
+      <a
+        href="https://www.ayntec.com/policies/shipping-policy"
+        target="_blank"
+        rel="noopener noreferrer">shipping policy <span aria-hidden="true">↗</span></a
       >
       <a
         href="https://github.com/castdrian/thor-when#methodology"

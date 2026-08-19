@@ -1,6 +1,7 @@
-import type { ArrivalEstimate, DateWindow, ShippingMethod } from './types'
+import type { ArrivalEstimate, CommunityReport, DateWindow, ShippingMethod } from './types'
 
 const BRAZIL = 'Brazil'
+export const AYN_SHIPPING_POLICY_URL = 'https://www.ayntec.com/policies/shipping-policy'
 
 export const SUPPORTED_COUNTRIES = [
   'United States',
@@ -60,13 +61,76 @@ export function addCalendarDays(isoDate: string, days: number): string {
   return date.toISOString().slice(0, 10)
 }
 
+function quantile(values: number[], probability: number): number {
+  const sorted = [...values].sort((left, right) => left - right)
+  if (!sorted.length) return 0
+  const index = (sorted.length - 1) * probability
+  const lower = Math.floor(index)
+  const upper = Math.ceil(index)
+  if (lower === upper) return sorted[lower] ?? 0
+  return (sorted[lower] ?? 0) + ((sorted[upper] ?? 0) - (sorted[lower] ?? 0)) * (index - lower)
+}
+
+function workingDayDistance(start: string, end: string): number {
+  const date = new Date(`${start}T00:00:00Z`)
+  const target = new Date(`${end}T00:00:00Z`)
+  let days = 0
+  while (date < target) {
+    date.setUTCDate(date.getUTCDate() + 1)
+    if (date.getUTCDay() !== 0 && date.getUTCDay() !== 6) days += 1
+  }
+  return days
+}
+
+function calendarDayDistance(start: string, end: string): number {
+  return Math.round(
+    (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86_400_000
+  )
+}
+
+function communityTransitRange(
+  policyRange: { min: number; max: number },
+  country: string,
+  method: ShippingMethod,
+  reports: CommunityReport[]
+): { min: number; max: number; sampleSize: number } {
+  const observations = reports
+    .filter(
+      (report) =>
+        report.country === country &&
+        report.shippingMethod === method &&
+        report.deliveredOn !== undefined
+    )
+    .map((report) =>
+      method === 'dhl'
+        ? workingDayDistance(report.dispatchedOn, report.deliveredOn ?? report.dispatchedOn)
+        : calendarDayDistance(report.dispatchedOn, report.deliveredOn ?? report.dispatchedOn)
+    )
+    .filter((days) => days > 0)
+  if (observations.length < 3) return { ...policyRange, sampleSize: observations.length }
+  const observedMin = Math.max(1, Math.round(quantile(observations, 0.2)))
+  const observedMax = Math.max(observedMin, Math.round(quantile(observations, 0.8)))
+  return {
+    min: Math.max(1, Math.round((policyRange.min + observedMin) / 2)),
+    max: Math.max(1, Math.round((policyRange.max + observedMax) / 2)),
+    sampleSize: observations.length
+  }
+}
+
 export function addWorkingDaysToWindow(
   window: DateWindow,
   country: string,
-  method: ShippingMethod
+  method: ShippingMethod,
+  reports: CommunityReport[] = []
 ): ArrivalEstimate {
-  const range = transitRange(country, method)
+  const policyRange = transitRange(country, method)
+  const evidence = communityTransitRange(policyRange, country, method, reports)
+  const range = { ...policyRange, ...evidence }
   const addDays = method === 'dhl' ? addWorkingDays : addCalendarDays
+  const evidenceNote =
+    evidence.sampleSize >= 3
+      ? ` This window also blends ${evidence.sampleSize} anonymous community delivery reports for this route.`
+      : ''
   return {
     window: {
       start: addDays(window.start, range.min),
@@ -76,9 +140,11 @@ export function addWorkingDaysToWindow(
     methodLabel: range.label,
     explanation:
       method === 'dhl'
-        ? 'AYN lists DHL at about 3–7 working days after dispatch.'
+        ? `AYN lists DHL at about 3–7 working days after dispatch.${evidenceNote}`
         : country === BRAZIL
-          ? 'AYN lists Standard / 4PX at about 15–30 calendar days for Brazil after dispatch.'
-          : 'AYN lists Standard / 4PX at about 15–20 calendar days after dispatch.'
+          ? `AYN lists Standard / 4PX at about 15–30 calendar days for Brazil after dispatch.${evidenceNote}`
+          : `AYN lists Standard / 4PX at about 15–20 calendar days after dispatch.${evidenceNote}`,
+    sourceUrl: AYN_SHIPPING_POLICY_URL,
+    sampleSize: evidence.sampleSize
   }
 }

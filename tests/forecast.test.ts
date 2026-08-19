@@ -3,17 +3,17 @@ import { estimateShipment } from '../src/lib/forecast'
 import type { ShipmentDataset } from '../src/lib/types'
 
 const source: ShipmentDataset = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   fetchedAt: '2026-08-19T00:00:00.000Z',
   sourceUrl: 'https://www.ayntec.com/pages/shipment-dashboard',
   sourceLatestDate: '2026-08-18',
-  configurations: [{ color: 'White', tier: 'pro', storageVariant: 'standard' }],
+  configurations: [{ color: 'White', tier: 'pro', storageVariant: '256gb' }],
   records: [
     {
       date: '2026-08-01',
       color: 'White',
       tier: 'pro',
-      storageVariant: 'standard',
+      storageVariant: '256gb',
       lowerPrefix: 2400,
       upperPrefix: 2420,
       sourceLabel: 'first'
@@ -22,7 +22,7 @@ const source: ShipmentDataset = {
       date: '2026-08-05',
       color: 'White',
       tier: 'pro',
-      storageVariant: 'standard',
+      storageVariant: '256gb',
       lowerPrefix: 2421,
       upperPrefix: 2450,
       sourceLabel: 'second'
@@ -31,7 +31,7 @@ const source: ShipmentDataset = {
       date: '2026-08-10',
       color: 'White',
       tier: 'pro',
-      storageVariant: 'standard',
+      storageVariant: '256gb',
       lowerPrefix: 2451,
       upperPrefix: 2480,
       sourceLabel: 'third'
@@ -42,7 +42,7 @@ const source: ShipmentDataset = {
 const baseInput = {
   color: 'White',
   tier: 'pro' as const,
-  storageVariant: 'standard' as const,
+  storageVariant: '256gb' as const,
   country: 'United States',
   shippingMethod: 'dhl' as const
 }
@@ -90,13 +90,14 @@ describe('shipment estimates', () => {
     })
   })
 
-  it('rejects configurations absent from source data', () => {
+  it('uses a pooled forecast for a valid configuration with no direct rows', () => {
     const result = estimateShipment({ ...baseInput, color: 'Black', orderPrefix: '2500' }, source)
-    expect(result).toEqual({
-      ok: false,
-      code: 'unknown-configuration',
-      message: 'that Thor configuration is not in the latest shipment data.'
-    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.dispatch.status).toBe('insufficient')
+      expect(result.dispatch.model).toMatch(/^pooled/)
+      expect(result.dispatch.likelyDate >= source.sourceLatestDate).toBe(true)
+    }
   })
 
   it('reports unavailable data separately from an unknown configuration', () => {

@@ -9,6 +9,7 @@ import type {
   ThorTier,
   StorageVariant
 } from '../src/lib/types'
+import { THOR_COLORS, THOR_VARIANTS } from '../src/lib/types'
 
 export const SOURCE_URL = 'https://www.ayntec.com/pages/shipment-dashboard'
 const MAX_RESPONSE_BYTES = 2_000_000
@@ -32,15 +33,21 @@ export function parseConfiguration(
 ): { color: string; tier: ThorTier; storageVariant: StorageVariant } | null {
   const normalized = label
     .replace(/[（(]\s*512\s*[）)]/i, ' 512')
+    .replace(/[（(]\s*1\s*tb\s*[）)]/i, ' 1TB')
     .replace(/\s+/g, ' ')
     .trim()
-  const match = normalized.match(/^(.*?)\s+(Lite|Base|Pro|Max)(?:\s+512)?$/i)
+  const match = normalized.match(/^(.*?)\s+(Lite|Base|Pro|Max)(?:\s+(512|1TB))?$/i)
   if (!match) return null
+  const color = match[1].trim()
+  if (!THOR_COLORS.includes(color as (typeof THOR_COLORS)[number])) return null
   const tier = match[2].toLowerCase() as ThorTier
+  const storageLabel = match[3]?.toLowerCase()
+  const storageVariant =
+    tier === 'max' ? (storageLabel === '512' ? '512gb' : '1tb') : tier === 'pro' ? '256gb' : '128gb'
   return {
-    color: match[1].trim(),
+    color,
     tier,
-    storageVariant: /(?:^|\s)512$/i.test(normalized) ? '512' : 'standard'
+    storageVariant
   }
 }
 
@@ -101,18 +108,13 @@ export function parseDashboardHtml(
   )
   if (uniqueRows.size !== records.length)
     throw new Error('the shipment dashboard contains duplicate shipment rows')
-  const configurations = [
-    ...new Map(
-      records.map((record) => {
-        const configuration: ThorConfiguration = {
-          color: record.color,
-          tier: record.tier,
-          storageVariant: record.storageVariant
-        }
-        return [`${record.color}|${record.tier}|${record.storageVariant}`, configuration]
-      })
-    ).values()
-  ]
+  const configurations: ThorConfiguration[] = THOR_COLORS.flatMap((color) =>
+    THOR_VARIANTS.map((variant) => ({
+      color,
+      tier: variant.tier,
+      storageVariant: variant.storageVariant
+    }))
+  )
   if (configurations.length < MIN_CONFIGURATIONS)
     throw new Error('the shipment dashboard did not contain enough Thor configurations')
   const sourceLatestDate = records
@@ -121,7 +123,7 @@ export function parseDashboardHtml(
     .at(-1)
   if (!sourceLatestDate) throw new Error('the shipment dashboard did not contain a latest date')
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     fetchedAt,
     sourceUrl: SOURCE_URL,
     sourceLatestDate,
