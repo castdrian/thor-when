@@ -33,7 +33,7 @@ jobs:
       - name: unit tests
         run: bun run test
       - name: install chromium
-        run: bunx playwright install --with-deps chromium
+        run: bunx playwright install chromium
       - name: end-to-end tests
         run: bun run test:e2e
       - name: build
