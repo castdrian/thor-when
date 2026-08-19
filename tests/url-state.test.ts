@@ -13,4 +13,12 @@ describe('shareable URL state', () => {
     }
     expect(readInputFromUrl(writeInputToUrl(input))).toEqual(input)
   })
+
+  it('ignores crafted values outside the guided inputs', () => {
+    expect(
+      readInputFromUrl(
+        '?tier=unknown&storageVariant=1tb&orderPrefix=250&country=Unknown&shippingMethod=express'
+      )
+    ).toEqual({})
+  })
 })

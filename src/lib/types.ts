@@ -70,7 +70,7 @@ export interface EstimateSuccess {
 
 export interface EstimateFailure {
   ok: false
-  code: 'invalid-prefix' | 'unknown-configuration' | 'no-data'
+  code: 'invalid-prefix' | 'invalid-route' | 'unknown-configuration' | 'no-data'
   message: string
 }
 

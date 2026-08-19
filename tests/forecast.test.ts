@@ -63,6 +63,7 @@ describe('shipment estimates', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(['forecast', 'insufficient']).toContain(result.dispatch.status)
+      expect(result.dispatch.likelyDate >= source.sourceLatestDate).toBe(true)
       expect(result.dispatch.window.end >= result.dispatch.window.start).toBe(true)
       expect(result.arrival.window.start > result.dispatch.window.start).toBe(true)
     }
@@ -76,6 +77,19 @@ describe('shipment estimates', () => {
     })
   })
 
+  it('rejects unsupported route values', () => {
+    expect(
+      estimateShipment(
+        { ...baseInput, orderPrefix: '2500', country: 'Mars', shippingMethod: 'dhl' },
+        source
+      )
+    ).toEqual({
+      ok: false,
+      code: 'invalid-route',
+      message: 'choose a supported destination and shipping method.'
+    })
+  })
+
   it('rejects configurations absent from source data', () => {
     const result = estimateShipment({ ...baseInput, color: 'Black', orderPrefix: '2500' }, source)
     expect(result).toEqual({
@@ -83,5 +97,51 @@ describe('shipment estimates', () => {
       code: 'unknown-configuration',
       message: 'that Thor configuration is not in the latest shipment data.'
     })
+  })
+
+  it('reports unavailable data separately from an unknown configuration', () => {
+    const unavailable: ShipmentDataset = {
+      ...source,
+      records: [],
+      configurations: []
+    }
+    expect(estimateShipment({ ...baseInput, orderPrefix: '2500' }, unavailable)).toEqual({
+      ok: false,
+      code: 'no-data',
+      message: 'AYN shipment data is unavailable right now. Try again after the next refresh.'
+    })
+  })
+
+  it('widens an observed result when a bucket appears on adjacent source dates', () => {
+    const boundarySource: ShipmentDataset = {
+      ...source,
+      sourceLatestDate: '2026-08-12',
+      records: [
+        {
+          ...source.records[0],
+          date: '2026-08-01',
+          lowerPrefix: 2400,
+          upperPrefix: 2430
+        },
+        {
+          ...source.records[1],
+          date: '2026-08-05',
+          lowerPrefix: 2430,
+          upperPrefix: 2460
+        },
+        {
+          ...source.records[2],
+          date: '2026-08-10',
+          lowerPrefix: 2461,
+          upperPrefix: 2480
+        }
+      ]
+    }
+    const result = estimateShipment({ ...baseInput, orderPrefix: '2430' }, boundarySource)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.dispatch.confidence).toBe('medium')
+      expect(result.dispatch.window).toEqual({ start: '2026-08-01', end: '2026-08-05' })
+    }
   })
 })

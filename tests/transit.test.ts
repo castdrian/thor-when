@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { addWorkingDays, addWorkingDaysToWindow, transitRange } from '../src/lib/transit'
+import {
+  addCalendarDays,
+  addWorkingDays,
+  addWorkingDaysToWindow,
+  isSupportedCountry,
+  isSupportedShippingMethod,
+  transitRange
+} from '../src/lib/transit'
 
 describe('transit estimates', () => {
   it('uses the DHL range from AYN', () => {
@@ -14,9 +21,26 @@ describe('transit estimates', () => {
     })
   })
 
+  it('rejects unsupported route values', () => {
+    expect(isSupportedCountry('Mars')).toBe(false)
+    expect(isSupportedShippingMethod('express')).toBe(false)
+    expect(() => transitRange('Mars', 'standard')).toThrow(/destination/)
+  })
+
   it('skips weekends when adding working days', () => {
     expect(addWorkingDays('2026-08-14', 1)).toBe('2026-08-17')
     expect(addWorkingDays('2026-08-17', 3)).toBe('2026-08-20')
+  })
+
+  it('keeps calendar-day Standard transit on weekends when the range crosses one', () => {
+    expect(addCalendarDays('2026-08-14', 15)).toBe('2026-08-29')
+    expect(
+      addWorkingDaysToWindow(
+        { start: '2026-08-14', end: '2026-08-14' },
+        'United States',
+        'standard'
+      ).window
+    ).toEqual({ start: '2026-08-29', end: '2026-09-03' })
   })
 
   it('adds transit to both ends of a dispatch window', () => {

@@ -4,8 +4,9 @@
 
 ## verification
 
-- [ ] `npm run format:check`
-- [ ] `npm run lint`
-- [ ] `npm run check`
-- [ ] `npm test`
-- [ ] `npm run build`
+- [ ] `bun run format:check`
+- [ ] `bun run lint`
+- [ ] `bun run check`
+- [ ] `bun run test`
+- [ ] `bun run test:e2e`
+- [ ] `bun run build`

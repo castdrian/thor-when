@@ -1,4 +1,4 @@
-import { addWorkingDaysToWindow } from './transit'
+import { addWorkingDaysToWindow, isSupportedCountry, isSupportedShippingMethod } from './transit'
 import { configurationKey, hasConfiguration } from './data'
 import type {
   Confidence,
@@ -22,6 +22,12 @@ interface ForecastModel {
   predict: (points: FrontierPoint[], target: number) => number
 }
 
+function lastPoint(points: FrontierPoint[]): FrontierPoint {
+  const point = points.at(-1)
+  if (!point) throw new Error('forecast requires at least one frontier point')
+  return point
+}
+
 const DAY_MS = 86_400_000
 
 function toDay(isoDate: string): number {
@@ -37,6 +43,18 @@ function median(values: number[]): number {
   const sorted = [...values].sort((left, right) => left - right)
   const middle = Math.floor(sorted.length / 2)
   return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle]
+}
+
+function quantile(values: number[], probability: number): number {
+  if (!values.length) return 0
+  const sorted = [...values].sort((left, right) => left - right)
+  const index = (sorted.length - 1) * probability
+  const lower = Math.floor(index)
+  const upper = Math.ceil(index)
+  if (lower === upper) return sorted[lower] ?? 0
+  const lowerValue = sorted[lower] ?? 0
+  const upperValue = sorted[upper] ?? lowerValue
+  return lowerValue + (upperValue - lowerValue) * (index - lower)
 }
 
 function matchingRecords(
@@ -74,9 +92,10 @@ function positiveRates(points: FrontierPoint[]): number[] {
 }
 
 function medianRatePrediction(points: FrontierPoint[], target: number): number {
+  const latest = lastPoint(points)
   const rates = positiveRates(points).slice(-5)
-  if (!rates.length) return points.at(-1)!.day + Math.max(1, target - points.at(-1)!.prefix)
-  return points.at(-1)!.day + Math.max(0, target - points.at(-1)!.prefix) / median(rates)
+  if (!rates.length) return latest.day + Math.max(1, target - latest.prefix)
+  return latest.day + Math.max(0, target - latest.prefix) / median(rates)
 }
 
 function theilSenPrediction(points: FrontierPoint[], target: number): number {
@@ -91,7 +110,7 @@ function theilSenPrediction(points: FrontierPoint[], target: number): number {
   if (!slopes.length) return medianRatePrediction(points, target)
   const slope = median(slopes)
   const intercept = median(points.map((point) => point.prefix - slope * point.day))
-  return Math.max(points.at(-1)!.day, (target - intercept) / slope)
+  return Math.max(lastPoint(points).day, (target - intercept) / slope)
 }
 
 function models(): ForecastModel[] {
@@ -113,7 +132,9 @@ function selectModel(points: FrontierPoint[]): { model: ForecastModel; residuals
     return {
       model,
       residuals,
-      score: residuals.length ? median(residuals) : Number.POSITIVE_INFINITY
+      score: residuals.length
+        ? residuals.reduce((total, residual) => total + residual, 0) / residuals.length
+        : Number.POSITIVE_INFINITY
     }
   })
   const selected = scores.sort((left, right) => left.score - right.score)[0]
@@ -127,10 +148,15 @@ function windowAround(
   target: number
 ): DateWindow {
   const rates = positiveRates(points)
-  const gap = Math.max(0, target - points.at(-1)!.prefix)
-  const baseline = rates.length ? Math.max(2, (gap / median(rates)) * 0.2) : Math.max(4, gap / 100)
-  const spread = Math.max(baseline, residuals.length ? median(residuals) : baseline)
-  const start = Math.max(points.at(-1)!.day, day - spread)
+  const latest = lastPoint(points)
+  const gap = Math.max(0, target - latest.prefix)
+  const horizon = rates.length ? gap / median(rates) : gap / 100
+  const baseline = rates.length ? Math.max(2, horizon * 0.2) : Math.max(4, horizon)
+  const residualSpread = residuals.length ? quantile(residuals, 0.8) : baseline
+  const sparseMultiplier = points.length < 5 ? 1.25 : 1
+  const longHorizonMultiplier = horizon > 30 ? 1.35 : horizon > 14 ? 1.15 : 1
+  const spread = Math.max(baseline, residualSpread) * sparseMultiplier * longHorizonMultiplier
+  const start = Math.max(latest.day, day - spread)
   return {
     start: fromDay(toDay(points[0].date) + start),
     end: fromDay(toDay(points[0].date) + day + spread)
@@ -151,7 +177,8 @@ function confidenceFor(
 function dispatchEstimate(
   configuration: ThorConfiguration,
   orderPrefix: number,
-  records: ShipmentRecord[]
+  records: ShipmentRecord[],
+  sourceLatestDate: string
 ): DispatchEstimate {
   const matched = matchingRecords(configuration, records)
   if (!matched.length) {
@@ -166,22 +193,29 @@ function dispatchEstimate(
       explanation: 'There is no matching shipment history for this configuration yet.'
     }
   }
-  const exact = matched.find(
+  const exactMatches = matched.filter(
     (record) => orderPrefix >= record.lowerPrefix && orderPrefix <= record.upperPrefix
   )
   const points = buildFrontier(matched)
-  const latest = points.at(-1)!
+  const latest = lastPoint(points)
   const crossing = matched.find((record) => record.upperPrefix >= orderPrefix)
-  if (exact) {
+  if (exactMatches.length) {
+    const exactDates = [...new Set(exactMatches.map((record) => record.date))].sort()
+    const firstExactDate = exactDates[0]
+    const lastExactDate = exactDates.at(-1)
+    if (!firstExactDate || !lastExactDate) throw new Error('observed batch has no date')
+    const ambiguousBoundary = exactDates.length > 1
     return {
       status: 'observed',
-      likelyDate: exact.date,
-      window: { start: exact.date, end: exact.date },
-      confidence: 'high',
+      likelyDate: lastExactDate,
+      window: { start: firstExactDate, end: lastExactDate },
+      confidence: ambiguousBoundary ? 'medium' : 'high',
       frontierPrefix: latest.prefix,
       observations: points.length,
-      model: 'published AYN batch',
-      explanation: `AYN explicitly lists ${orderPrefix}xx in a shipment batch on ${exact.date}.`
+      model: ambiguousBoundary ? 'published batch boundary' : 'published AYN batch',
+      explanation: ambiguousBoundary
+        ? `AYN lists ${orderPrefix}xx across adjacent batch dates, so the source boundary is treated as a range.`
+        : `AYN explicitly lists ${orderPrefix}xx in a shipment batch on ${lastExactDate}.`
     }
   }
   if (crossing || orderPrefix <= latest.prefix) {
@@ -202,13 +236,16 @@ function dispatchEstimate(
       record.tier === configuration.tier && record.storageVariant === configuration.storageVariant
   )
   const pooledPoints = buildFrontier(pooledRecords)
-  const forecastPoints = points.length >= 3 ? points : pooledPoints
+  const configurationProgress = positiveRates(points).length
+  const usedFallback = configurationProgress < 3
+  const forecastPoints = usedFallback ? pooledPoints : points
   const selected = selectModel(forecastPoints)
   const relativeDay = selected.model.predict(forecastPoints, orderPrefix)
   const absoluteDay = toDay(forecastPoints[0].date) + relativeDay
   const window = windowAround(relativeDay, selected.residuals, forecastPoints, orderPrefix)
-  const likelyDate = fromDay(absoluteDay)
-  const usedFallback = points.length < 3
+  const likelyDate = fromDay(Math.max(absoluteDay, toDay(sourceLatestDate)))
+  window.start = window.start < sourceLatestDate ? sourceLatestDate : window.start
+  window.end = window.end < likelyDate ? likelyDate : window.end
   return {
     status: usedFallback ? 'insufficient' : 'forecast',
     likelyDate,
@@ -242,6 +279,20 @@ export function estimateShipment(input: EstimateInput, source: ShipmentDataset):
       message: 'enter the four digits before the xx in your order number.'
     }
   }
+  if (!isSupportedCountry(input.country) || !isSupportedShippingMethod(input.shippingMethod)) {
+    return {
+      ok: false,
+      code: 'invalid-route',
+      message: 'choose a supported destination and shipping method.'
+    }
+  }
+  if (!source.records.length || !source.configurations.length) {
+    return {
+      ok: false,
+      code: 'no-data',
+      message: 'AYN shipment data is unavailable right now. Try again after the next refresh.'
+    }
+  }
   if (!hasConfiguration(input, source)) {
     return {
       ok: false,
@@ -249,7 +300,7 @@ export function estimateShipment(input: EstimateInput, source: ShipmentDataset):
       message: 'that Thor configuration is not in the latest shipment data.'
     }
   }
-  const dispatch = dispatchEstimate(input, parsedPrefix, source.records)
+  const dispatch = dispatchEstimate(input, parsedPrefix, source.records, source.sourceLatestDate)
   if (dispatch.status === 'insufficient' && !dispatch.likelyDate) {
     return { ok: false, code: 'no-data', message: dispatch.explanation }
   }

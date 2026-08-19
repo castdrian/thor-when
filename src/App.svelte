@@ -8,11 +8,16 @@
     getColors,
     getStorageVariants,
     getTiers,
-    hasConfiguration
+    hasConfiguration,
+    isDatasetStale
   } from './lib/data'
   import { estimateShipment } from './lib/forecast'
   import { formatDate, formatFreshness, formatWindow } from './lib/format'
-  import { readInputFromUrl, writeInputToUrl } from './lib/url-state'
+  import {
+    readInputFromUrl,
+    SUPPORTED_COUNTRIES,
+    writeInputToUrl
+  } from './lib/url-state'
   import type {
     Confidence,
     EstimateInput,
@@ -22,29 +27,11 @@
     ThorTier
   } from './lib/types'
 
-  const countries = [
-    'United States',
-    'Canada',
-    'United Kingdom',
-    'Germany',
-    'France',
-    'Netherlands',
-    'Australia',
-    'New Zealand',
-    'Japan',
-    'South Korea',
-    'Singapore',
-    'Brazil',
-    'Spain',
-    'Italy',
-    'Sweden',
-    'Switzerland',
-    'Poland',
-    'Ireland',
-    'Other'
-  ]
-
-  const defaultConfiguration = dataset.configurations[0]
+  const defaultConfiguration = dataset.configurations[0] ?? {
+    color: '',
+    tier: 'lite' as const,
+    storageVariant: 'standard' as const
+  }
   const urlInput = typeof window === 'undefined' ? {} : readInputFromUrl(window.location.search)
   let form: EstimateInput = {
     color: String(urlInput.color ?? defaultConfiguration.color),
@@ -68,6 +55,9 @@
     ? displayConfiguration(form)
     : 'choose a valid combination'
   $: prefixIsValid = /^\d{4}$/.test(String(form.orderPrefix))
+  $: prefixHasError = String(form.orderPrefix).length > 0 && !prefixIsValid
+  $: datasetAvailable = dataset.records.length > 0 && dataset.configurations.length > 0
+  $: datasetIsStale = isDatasetStale(dataset)
 
   onMount(() => {
     if (prefixIsValid && selectedConfigurationIsValid) {
@@ -127,10 +117,16 @@
       <span>thor when?</span>
     </a>
     <div class="topbar-links">
-      <a href="https://www.ayntec.com/pages/shipment-dashboard" target="_blank" rel="noreferrer"
+      <a
+        href="https://www.ayntec.com/pages/shipment-dashboard"
+        target="_blank"
+        rel="noopener noreferrer"
         >source dashboard <span aria-hidden="true">↗</span></a
       >
-      <a href="https://github.com/sponsors/castdrian" target="_blank" rel="noreferrer"
+      <a
+        href="https://github.com/sponsors/castdrian"
+        target="_blank"
+        rel="noopener noreferrer"
         >support the project <span aria-hidden="true">↗</span></a
       >
     </div>
@@ -138,10 +134,25 @@
 
   <section class="hero" aria-labelledby="page-title">
     <div class="eyebrow">
-      <span class="pulse-dot"></span> live queue reading · updated {formatFreshness(
-        dataset.fetchedAt
-      )}
+      <span class="pulse-dot"></span>
+      {#if !datasetAvailable}
+        shipment source unavailable
+      {:else if datasetIsStale}
+        source may be stale · refreshed {formatFreshness(dataset.fetchedAt)}
+      {:else}
+        live queue reading · updated {formatFreshness(dataset.fetchedAt)}
+      {/if}
     </div>
+    {#if datasetIsStale || !datasetAvailable}
+      <p class="data-status" role="status">
+        {#if datasetAvailable}
+          AYN has not published a recent shipment frontier. Estimates may be less useful until the
+          source moves again.
+        {:else}
+          the latest AYN shipment data could not be loaded, so no estimate is available yet.
+        {/if}
+      </p>
+    {/if}
     <h1 id="page-title">when will your<br /><em>thor</em> arrive?</h1>
     <p class="hero-copy">
       a calm, data-led read on the wait. tell us what you ordered and we’ll turn AYN’s shipment
@@ -200,14 +211,17 @@
             inputmode="numeric"
             maxlength="4"
             placeholder="2500"
-            aria-describedby="prefix-help"
-            aria-invalid={hasSubmitted && !prefixIsValid}
+            aria-describedby={prefixHasError ? 'prefix-help prefix-error' : 'prefix-help'}
+            aria-invalid={prefixHasError}
           />
           <span aria-hidden="true">xx</span>
         </div>
         <small id="prefix-help"
           >your order may look like 2500xx. we use the four visible digits as a 100-order bucket.</small
         >
+        {#if prefixHasError}
+          <small class="field-error" id="prefix-error">enter exactly four digits.</small>
+        {/if}
       </label>
 
       <div class="card-kicker second-kicker"><span>03</span> your route</div>
@@ -215,7 +229,7 @@
         <label>
           <span>destination</span>
           <select bind:value={form.country} aria-label="Destination country">
-            {#each countries as country (country)}
+            {#each SUPPORTED_COUNTRIES as country (country)}
               <option value={country}>{country}</option>
             {/each}
           </select>
@@ -297,7 +311,11 @@
               on:click={() => navigator.clipboard?.writeText(window.location.href)}
               >copy share link <span aria-hidden="true">↗</span></button
             >
-            <a class="quiet-button" href={result.dataset.sourceUrl} target="_blank" rel="noreferrer"
+            <a
+              class="quiet-button"
+              href={result.dataset.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               >verify at AYN <span aria-hidden="true">↗</span></a
             >
           </div>
@@ -305,7 +323,7 @@
       {:else if result && !result.ok}
         <section class="glass-card result-card empty-result" aria-live="polite" role="alert">
           <span class="empty-icon" aria-hidden="true">∿</span>
-          <h2>we need one more signal</h2>
+          <h2>{result.code === 'no-data' ? 'the source is taking a pause' : 'we need one more signal'}</h2>
           <p>{result.message}</p>
         </section>
       {:else}
@@ -317,9 +335,13 @@
             route home.
           </p>
           <div class="empty-meta">
-            <span>observed batches</span><strong>{dataset.records.length}</strong><span
-              >source through</span
-            ><strong>{formatDate(dataset.sourceLatestDate)}</strong>
+            {#if datasetAvailable}
+              <span>observed batches</span><strong>{dataset.records.length}</strong><span
+                >source through</span
+              ><strong>{formatDate(dataset.sourceLatestDate)}</strong>
+            {:else}
+              <span>source status</span><strong>unavailable</strong>
+            {/if}
           </div>
         </section>
       {/if}
@@ -355,6 +377,24 @@
         href="https://www.ayntec.com/pages/shipment-dashboard"
         target="_blank"
         rel="noopener noreferrer">AYN dashboard <span aria-hidden="true">↗</span></a
+      >
+      <a
+        href="https://github.com/castdrian/thor-when#methodology"
+        target="_blank"
+        rel="noopener noreferrer"
+        >methodology <span aria-hidden="true">↗</span></a
+      >
+      <a
+        href="https://github.com/castdrian/thor-when#privacy"
+        target="_blank"
+        rel="noopener noreferrer"
+        >privacy <span aria-hidden="true">↗</span></a
+      >
+      <a
+        href="https://github.com/castdrian/thor-when#disclaimer"
+        target="_blank"
+        rel="noopener noreferrer"
+        >disclaimer <span aria-hidden="true">↗</span></a
       >
     </div>
     <p class="footer-fineprint">

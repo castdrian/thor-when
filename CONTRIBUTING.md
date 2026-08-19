@@ -4,7 +4,7 @@ Thanks for helping make the wait a little clearer.
 
 ## development
 
-Use Node.js LTS and npm. Run the full verification commands before opening a pull request. Keep changes focused, use conventional commit messages, and add tests at public behavior seams.
+Use Bun 1.3.14. Node 22 in `.nvmrc` is reserved for ecosystem tooling that needs Node-compatible APIs. Run the full verification commands before opening a pull request. Keep changes focused, use conventional commit messages, and add tests at public behavior seams.
 
 Do not add analytics, personal-data collection, private-order integrations, or claims that turn an estimate into a promise. Treat AYN’s HTML as untrusted input and keep the parser strict.
 

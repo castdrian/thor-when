@@ -16,6 +16,14 @@ describe('thor when app', () => {
       'href',
       'https://ko-fi.com/castdrian'
     )
+    expect(screen.getByRole('link', { name: /donate/i })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer'
+    )
+    expect(screen.getByRole('link', { name: /methodology/i })).toHaveAttribute(
+      'href',
+      'https://github.com/castdrian/thor-when#methodology'
+    )
   })
 
   it('shows a result after entering a valid signal', async () => {
@@ -24,5 +32,13 @@ describe('thor when app', () => {
     await fireEvent.input(input, { target: { value: '2500' } })
     await fireEvent.click(screen.getByRole('button', { name: /show my window/i }))
     expect(await screen.findByText(/most likely dispatch/i)).toBeInTheDocument()
+  })
+
+  it('announces an invalid prefix before the submit action is available', async () => {
+    render(App)
+    const input = screen.getByRole('textbox', { name: /four digits/i })
+    await fireEvent.input(input, { target: { value: '25' } })
+    expect(screen.getByText('enter exactly four digits.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /show my window/i })).toBeDisabled()
   })
 })

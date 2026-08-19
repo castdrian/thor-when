@@ -2,8 +2,15 @@ import rawDataset from '../../data/shipment-data.json'
 import type { ShipmentDataset, ThorConfiguration, ThorTier, StorageVariant } from './types'
 
 export const SOURCE_URL = 'https://www.ayntec.com/pages/shipment-dashboard'
+export const MAX_UI_SOURCE_AGE_DAYS = 14
 
 export const dataset = rawDataset as ShipmentDataset
+
+export function isDatasetStale(source: ShipmentDataset = dataset, now = new Date()): boolean {
+  const latest = Date.parse(`${source.sourceLatestDate}T00:00:00Z`)
+  if (Number.isNaN(latest)) return true
+  return now.getTime() - latest > MAX_UI_SOURCE_AGE_DAYS * 86_400_000
+}
 
 const sortConfigurations = (left: ThorConfiguration, right: ThorConfiguration) =>
   `${left.color}-${left.tier}-${left.storageVariant}`.localeCompare(

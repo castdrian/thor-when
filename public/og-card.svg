@@ -16,9 +16,9 @@
   <circle cx="920" cy="160" r="270" fill="url(#glow)" filter="url(#blur)"/>
   <circle cx="120" cy="580" r="260" fill="#c2d2cb" fill-opacity=".45" filter="url(#blur)"/>
   <rect x="60" y="58" width="1080" height="514" rx="38" fill="#fffdf9" fill-opacity=".42" stroke="#fff" stroke-opacity=".76"/>
-  <circle cx="112" cy="116" r="9" fill="#a44537"/>
-  <text x="138" y="126" fill="#2e2c29" font-family="Arial, sans-serif" font-weight="700" font-size="27">thor when?</text>
-  <text x="112" y="305" fill="#2e2c29" font-family="Arial, sans-serif" font-weight="700" font-size="92" letter-spacing="-6">when will your</text>
-  <text x="112" y="405" fill="#a44537" font-family="Arial, sans-serif" font-weight="700" font-size="104" letter-spacing="-7">thor arrive?</text>
-  <text x="116" y="487" fill="#6d6a64" font-family="Arial, sans-serif" font-size="23">a calm, data-led read on the AYN shipment queue</text>
+  <circle cx="112" cy="116" r="9" fill="#4f6f91"/>
+  <text x="138" y="126" fill="#2e2c29" font-family="DejaVu Sans" font-weight="700" font-size="27">thor when?</text>
+  <text x="112" y="305" fill="#2e2c29" font-family="DejaVu Sans" font-weight="700" font-size="92" letter-spacing="-6">when will your</text>
+  <text x="112" y="405" fill="#4f6f91" font-family="DejaVu Sans" font-weight="700" font-size="104" letter-spacing="-7">thor arrive?</text>
+  <text x="116" y="487" fill="#5f5b55" font-family="DejaVu Sans" font-size="23">a calm, data-led read on the AYN shipment queue</text>
 </svg>

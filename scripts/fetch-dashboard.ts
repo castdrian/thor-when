@@ -12,6 +12,10 @@ import type {
 
 export const SOURCE_URL = 'https://www.ayntec.com/pages/shipment-dashboard'
 const MAX_RESPONSE_BYTES = 2_000_000
+const MAX_SOURCE_AGE_DAYS = 45
+const MIN_RECOGNIZED_RECORDS = 10
+const MIN_CONFIGURATIONS = 3
+const DAY_MS = 86_400_000
 
 function decodeHtml(value: string): string {
   return value
@@ -27,13 +31,27 @@ export function parseConfiguration(
   label: string
 ): { color: string; tier: ThorTier; storageVariant: StorageVariant } | null {
   const normalized = label
-    .replace(/[（(]\s*512\s*[）)]/i, '')
+    .replace(/[（(]\s*512\s*[）)]/i, ' 512')
     .replace(/\s+/g, ' ')
     .trim()
-  const match = normalized.match(/^(.*?)\s+(Lite|Base|Pro|Max)$/i)
+  const match = normalized.match(/^(.*?)\s+(Lite|Base|Pro|Max)(?:\s+512)?$/i)
   if (!match) return null
   const tier = match[2].toLowerCase() as ThorTier
-  return { color: match[1].trim(), tier, storageVariant: /512/i.test(label) ? '512' : 'standard' }
+  return {
+    color: match[1].trim(),
+    tier,
+    storageVariant: /(?:^|\s)512$/i.test(normalized) ? '512' : 'standard'
+  }
+}
+
+function parseSourceDate(value: string): string {
+  const match = value.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/)
+  if (!match) throw new Error(`invalid date in shipment dashboard: ${value}`)
+  const date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+  const parsed = new Date(`${date}T00:00:00Z`)
+  if (Number.isNaN(parsed.valueOf()) || parsed.toISOString().slice(0, 10) !== date)
+    throw new Error(`invalid date in shipment dashboard: ${value}`)
+  return date
 }
 
 export function parseDashboardHtml(
@@ -49,14 +67,18 @@ export function parseDashboardHtml(
   for (const paragraph of paragraphs) {
     const dateMatch = paragraph.match(/^(\d{4}\/\d{1,2}\/\d{1,2})$/)
     if (dateMatch) {
-      const [year, month, day] = dateMatch[1].split('/')
-      currentDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      currentDate = parseSourceDate(dateMatch[1])
       continue
     }
-    const row = paragraph.match(/^AYN Thor\s+(.+?):\s*(\d{4})xx\s*--\s*(\d{4})xx$/i)
-    if (!row || !currentDate) continue
+    if (/^AYN Thor\s+/i.test(paragraph) && !currentDate)
+      throw new Error('shipment row appeared before its source date')
+    const row = paragraph.match(/^AYN Thor\s+(.+?):\s*(\d{4})xx\s*(?:--|-|–|—)\s*(\d{4})xx$/i)
+    if (!row) {
+      if (/^AYN Thor\s+/i.test(paragraph)) throw new Error(`malformed shipment row: ${paragraph}`)
+      continue
+    }
     const configuration = parseConfiguration(row[1])
-    if (!configuration) continue
+    if (!configuration) throw new Error(`unknown Thor configuration: ${row[1]}`)
     records.push({
       date: currentDate,
       ...configuration,
@@ -65,13 +87,11 @@ export function parseDashboardHtml(
       sourceLabel: paragraph
     })
   }
-  if (records.length < 3)
+  if (records.length < MIN_RECOGNIZED_RECORDS)
     throw new Error('the shipment dashboard did not contain enough recognized Thor rows')
   for (const record of records) {
     if (record.lowerPrefix > record.upperPrefix)
       throw new Error(`invalid range in ${record.sourceLabel}`)
-    if (Number.isNaN(Date.parse(`${record.date}T00:00:00Z`)))
-      throw new Error(`invalid date in ${record.sourceLabel}`)
   }
   const uniqueRows = new Set(
     records.map(
@@ -93,10 +113,13 @@ export function parseDashboardHtml(
       })
     ).values()
   ]
+  if (configurations.length < MIN_CONFIGURATIONS)
+    throw new Error('the shipment dashboard did not contain enough Thor configurations')
   const sourceLatestDate = records
     .map((record) => record.date)
     .sort()
-    .at(-1)!
+    .at(-1)
+  if (!sourceLatestDate) throw new Error('the shipment dashboard did not contain a latest date')
   return {
     schemaVersion: 1,
     fetchedAt,
@@ -117,12 +140,19 @@ export async function fetchDashboard(): Promise<ShipmentDataset> {
       headers: { accept: 'text/html' }
     })
     if (!response.ok) throw new Error(`source returned HTTP ${response.status}`)
+    if (!response.url.startsWith('https://'))
+      throw new Error('source redirected to a non-HTTPS URL')
     const contentLength = Number(response.headers.get('content-length') ?? 0)
     if (contentLength > MAX_RESPONSE_BYTES) throw new Error('source response is unexpectedly large')
     const html = await response.text()
     if (new TextEncoder().encode(html).byteLength > MAX_RESPONSE_BYTES)
       throw new Error('source response is unexpectedly large')
-    return parseDashboardHtml(html)
+    const dataset = parseDashboardHtml(html)
+    const latest = Date.parse(`${dataset.sourceLatestDate}T00:00:00Z`)
+    const ageInDays = (Date.now() - latest) / DAY_MS
+    if (ageInDays > MAX_SOURCE_AGE_DAYS)
+      throw new Error(`shipment dashboard is more than ${MAX_SOURCE_AGE_DAYS} days old`)
+    return dataset
   } finally {
     clearTimeout(timeout)
   }
