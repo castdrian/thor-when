@@ -199,8 +199,7 @@ a {
 label > span,
 .date-hero > span,
 .arrival-label,
-.result-detail-grid span,
-.empty-meta span {
+.result-detail-grid span {
   font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -582,20 +581,6 @@ small {
   font-size: 4.5rem;
   line-height: 0.7;
   transform: rotate(-22deg);
-}
-.empty-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: baseline;
-  margin-top: 32px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
-  width: 100%;
-}
-.empty-meta strong {
-  font-family: var(--mono);
-  font-size: 0.82rem;
 }
 .method-note {
   display: flex;

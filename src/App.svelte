@@ -351,7 +351,6 @@
         {/if}
       </div>
 
-      <div class="card-kicker second-kicker">your order signal</div>
       <label class="prefix-field">
         <span>first four digits of your order number</span>
         <div class="prefix-input-wrap">
@@ -475,15 +474,6 @@
             fill the quiet little form and we’ll show the dispatch signal, the confidence, and the
             route home.
           </p>
-          <div class="empty-meta">
-            {#if datasetAvailable}
-              <span>observed batches</span><strong>{liveDataset.records.length}</strong><span
-                >AYN data through</span
-              ><strong>{formatDate(liveDataset.sourceLatestDate)}</strong>
-            {:else}
-              <span>source status</span><strong>unavailable</strong>
-            {/if}
-          </div>
         </section>
       {/if}
 
