@@ -17,7 +17,7 @@
   import { formatDate, formatFreshness, formatWindow } from './lib/format'
   import {
     readInputFromUrl,
-    SUPPORTED_COUNTRIES,
+    COUNTRY_OPTIONS,
     writeInputToUrl
   } from './lib/url-state'
   import type {
@@ -386,7 +386,7 @@
         <label>
           <span>destination</span>
           <select bind:value={form.country} aria-label="Destination country">
-            {#each SUPPORTED_COUNTRIES as country (country)}
+            {#each COUNTRY_OPTIONS as country (country)}
               <option value={country}>{country}</option>
             {/each}
           </select>
@@ -555,7 +555,7 @@
           <label>
             <span>destination</span>
             <select bind:value={reportForm.country} aria-label="Report destination country">
-              {#each SUPPORTED_COUNTRIES as country (country)}
+              {#each COUNTRY_OPTIONS as country (country)}
                 <option value={country}>{country}</option>
               {/each}
             </select>
@@ -612,24 +612,6 @@
     <div class="footer-brand"><span class="wordmark-dot"></span><span>thor when?</span></div>
     <p>an unofficial estimate for people waiting on their thor.</p>
     <div class="footer-links">
-      <a href="https://github.com/castdrian/thor-when" target="_blank" rel="noopener noreferrer"
-        >source <span aria-hidden="true">↗</span></a
-      >
-      <a
-        href="https://www.ayntec.com/pages/shipment-dashboard"
-        target="_blank"
-        rel="noopener noreferrer">AYN dashboard <span aria-hidden="true">↗</span></a
-      >
-      <a
-        href="https://www.ayntec.com/products/ayn-thor"
-        target="_blank"
-        rel="noopener noreferrer">Thor variants <span aria-hidden="true">↗</span></a
-      >
-      <a
-        href="https://www.ayntec.com/policies/shipping-policy"
-        target="_blank"
-        rel="noopener noreferrer">shipping policy <span aria-hidden="true">↗</span></a
-      >
       <a
         href="https://github.com/castdrian/thor-when#methodology"
         target="_blank"

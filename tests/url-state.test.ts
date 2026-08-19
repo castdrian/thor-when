@@ -16,6 +16,18 @@ describe('shareable URL state', () => {
     expect(readInputFromUrl(shareUrl)).toEqual(input)
   })
 
+  it('round trips countries from the complete AYN destination list', () => {
+    const input = {
+      color: 'Black',
+      tier: 'max' as const,
+      storageVariant: '1tb' as const,
+      orderPrefix: '2500',
+      country: 'Zimbabwe',
+      shippingMethod: 'dhl' as const
+    }
+    expect(readInputFromUrl(writeInputToUrl(input))).toEqual(input)
+  })
+
   it('rejects a damaged compact share code', () => {
     expect(readInputFromUrl('?s=AAAAAAAA')).toEqual({})
   })

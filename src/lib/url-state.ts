@@ -2,7 +2,7 @@ import type { EstimateInput, ShippingMethod, StorageVariant, ThorTier } from './
 import { decodeShareCode, encodeShareCode } from './share-code'
 import { SUPPORTED_COUNTRIES } from './transit'
 
-export { SUPPORTED_COUNTRIES } from './transit'
+export { COUNTRY_OPTIONS, SUPPORTED_COUNTRIES } from './transit'
 
 const keys = [
   'color',
