@@ -231,6 +231,13 @@ function dispatchEstimate(
   const matchedCommunityReports = communityReports.filter(
     (report) => configurationKey(report) === configurationKey(configuration)
   )
+  const relevantCommunityReports = communityReports.filter(
+    (report) =>
+      report.tier === configuration.tier && report.storageVariant === configuration.storageVariant
+  )
+  const communityNote = relevantCommunityReports.length
+    ? ` ${relevantCommunityReports.length} validated community dispatch report${relevantCommunityReports.length === 1 ? '' : 's'} inform${relevantCommunityReports.length === 1 ? 's' : ''} this read.`
+    : ''
   const calibrationRecords = [...matched, ...matchedCommunityReports.map(reportToRecord)]
   const exactMatches = matched.filter(
     (record) => orderPrefix >= record.lowerPrefix && orderPrefix <= record.upperPrefix
@@ -299,7 +306,7 @@ function dispatchEstimate(
       frontierPrefix: latest.prefix,
       observations: 0,
       model: 'pooled frontier',
-      explanation: `AYN has not published a ${displayConfiguration(configuration)} row yet, but similar queues have passed ${orderPrefix}xx.`
+      explanation: `AYN has not published a ${displayConfiguration(configuration)} row yet, but similar queues have passed ${orderPrefix}xx.${communityNote}`
     }
   }
   const selected = selectModel(forecastPoints)
@@ -323,9 +330,9 @@ function dispatchEstimate(
     model: usedFallback ? `pooled ${selected.model.name}` : selected.model.name,
     explanation: usedFallback
       ? points.length
-        ? 'This configuration has limited history, so the estimate uses the combined pace of similar Thor queues.'
-        : `AYN has not published ${displayConfiguration(configuration)} yet, so the estimate uses the combined pace of similar Thor queues.`
-      : `The estimate follows ${selected.model.name} from the observed shipment frontier.`
+        ? `This configuration has limited history, so the estimate uses the combined pace of similar Thor queues.${communityNote}`
+        : `AYN has not published ${displayConfiguration(configuration)} yet, so the estimate uses the combined pace of similar Thor queues.${communityNote}`
+      : `The estimate follows ${selected.model.name} from the observed shipment frontier.${communityNote}`
   }
 }
 
