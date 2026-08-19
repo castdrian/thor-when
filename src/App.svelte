@@ -62,7 +62,6 @@
       : 'light'
   let reportDispatchDate = ''
   let reportArrivalDate = ''
-  let reportConsent = false
   let reportSubmitting = false
   let reportNotice = ''
   const baseUrl = import.meta.env.BASE_URL
@@ -82,9 +81,6 @@
   $: datasetAvailable = liveDataset.records.length > 0 && liveDataset.configurations.length > 0
   $: datasetIsStale = isDatasetStale(liveDataset)
   $: reportSelectedConfigurationIsValid = hasConfiguration(reportForm, liveDataset)
-  $: reportConfigurationLabel = reportSelectedConfigurationIsValid
-    ? displayConfiguration(reportForm)
-    : 'choose a valid combination'
   $: reportPrefixIsValid = /^\d{4}$/.test(String(reportForm.orderPrefix))
   $: reportPrefixHasError = String(reportForm.orderPrefix).length > 0 && !reportPrefixIsValid
 
@@ -174,11 +170,9 @@
     if (
       !reportPrefixIsValid ||
       !reportSelectedConfigurationIsValid ||
-      !reportDispatchDate ||
-      !reportConsent
+      !reportDispatchDate
     ) {
-      reportNotice =
-        'choose the model, enter the first four digits, add a dispatch date, and confirm the privacy note.'
+      reportNotice = 'complete the model, order bucket, and dispatch date.'
       return
     }
     if (typeof fetch === 'undefined') {
@@ -199,8 +193,7 @@
           country: reportForm.country,
           shippingMethod: reportForm.shippingMethod,
           dispatchedOn: reportDispatchDate,
-          deliveredOn: reportArrivalDate || null,
-          consent: true
+          deliveredOn: reportArrivalDate || null
         })
       })
       const payload = (await response.json()) as { report?: CommunityReport; error?: string }
@@ -211,7 +204,6 @@
       mergeCommunityReports([payload.report])
       reportDispatchDate = ''
       reportArrivalDate = ''
-      reportConsent = false
       reportNotice = 'saved — this outcome is included in the live model now.'
     } catch {
       reportNotice = 'the live report service is unavailable. try again in a moment.'
@@ -255,7 +247,6 @@
 </svelte:head>
 
 <main class="page-shell">
-  <div class="ambient-orb orb-a"></div>
   <div class="ambient-orb orb-b"></div>
   <div class="grain"></div>
 
@@ -377,9 +368,7 @@
             aria-invalid={prefixHasError}
           />
         </div>
-        <small id="prefix-help"
-          >for example, 2500. we use these four digits as a 100-order bucket.</small
-        >
+        <small id="prefix-help">four digits = one 100-order bucket.</small>
         {#if prefixHasError}
           <small class="field-error" id="prefix-error">enter exactly four digits.</small>
         {/if}
@@ -520,10 +509,8 @@
       <div class="method-note">
         <span class="method-mark">i</span>
         <p>
-          <strong>how we read it.</strong> AYN publishes ranges, not individual order promises. thor when?
-          tracks the moving frontier, tests two pace guesses against past batches, and wraps the better
-          guess in a window based on its past misses. arrival uses AYN’s carrier transit windows; customs
-          and holidays can still move the real date.
+          <strong>how we read it.</strong> AYN publishes batches. We track the latest frontier, choose the
+          best recent pace, and add carrier transit. It’s a window, not a promise.
         </p>
       </div>
     </div>
@@ -533,15 +520,8 @@
     <div class="card-kicker">improve the next read</div>
     <div class="report-layout">
       <div>
-        <h2 id="report-title">when yours ships, tell the next person.</h2>
-        <p>
-          choose the Thor model and route here, then share the real dispatch or arrival milestone.
-          It is stored without names or addresses and is included in the live model as soon as it is
-          accepted.
-        </p>
-        <p class="report-safety">
-          never include a name, address, email, tracking number, or order link.
-        </p>
+        <h2 id="report-title">share your real shipment dates.</h2>
+        <p>your entry becomes live estimate data immediately.</p>
       </div>
       <form class="report-form" on:submit|preventDefault={submitShippingReport}>
         <div class="report-field-grid">
@@ -574,10 +554,6 @@
             </select>
           </label>
         </div>
-        <div class="report-summary">
-          <span>reporting</span>
-          <strong>{reportConfigurationLabel}</strong>
-        </div>
         <label class="prefix-field">
           <span>first four digits of the order number</span>
           <input
@@ -589,7 +565,7 @@
             aria-describedby={reportPrefixHasError ? 'report-prefix-help report-prefix-error' : 'report-prefix-help'}
             aria-invalid={reportPrefixHasError}
           />
-          <small id="report-prefix-help">these four digits identify the 100-order bucket.</small>
+          <small id="report-prefix-help">four digits = one 100-order bucket.</small>
           {#if reportPrefixHasError}
             <small class="field-error" id="report-prefix-error">enter exactly four digits.</small>
           {/if}
@@ -626,10 +602,6 @@
             />
           </label>
         </div>
-        <label class="consent-row">
-          <input bind:checked={reportConsent} type="checkbox" />
-          <span>I’m sharing an actual outcome and agree that it can improve future estimates.</span>
-        </label>
         <button
           class="primary-button report-button"
           type="submit"
@@ -637,8 +609,7 @@
             reportSubmitting ||
             !reportPrefixIsValid ||
             !reportSelectedConfigurationIsValid ||
-            !reportDispatchDate ||
-            !reportConsent
+            !reportDispatchDate
           }
         >
           <span>{reportSubmitting ? 'saving report…' : 'save shipping report'}</span>

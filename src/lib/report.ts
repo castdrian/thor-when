@@ -17,7 +17,6 @@ export interface CommunityReportInput {
   shippingMethod: string
   dispatchedOn: string
   deliveredOn?: string | null
-  consent: boolean
 }
 
 type ValidatedReport = Omit<CommunityReport, 'id' | 'submittedAt'>
@@ -54,7 +53,7 @@ export function parseCommunityReportInput(
   value: unknown,
   now = new Date()
 ): ValidatedReport | null {
-  if (!isRecord(value) || value.consent !== true) return null
+  if (!isRecord(value)) return null
   const color = typeof value.color === 'string' ? value.color : ''
   const tier = typeof value.tier === 'string' ? value.tier : ''
   const storageVariant = typeof value.storageVariant === 'string' ? value.storageVariant : ''

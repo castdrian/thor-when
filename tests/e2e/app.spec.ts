@@ -12,7 +12,7 @@ test('estimates a Thor and exposes sharing support', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await page.getByRole('button', { name: /switch to light mode/i }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  await expect(page.getByRole('heading', { name: /when yours ships/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /share your real shipment dates/i })).toBeVisible()
   await expect(page.getByRole('button', { name: /save shipping report/i })).toBeDisabled()
   await page.getByRole('textbox', { name: 'First four digits of your order number' }).fill('2500')
   await page.getByRole('button', { name: /show my window/i }).click()
